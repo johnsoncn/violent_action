@@ -1,4 +1,4 @@
-.DS_Store
 .ipynb_checkpoints
 *.pyc
 /yolo/yolov5
+.DS_Store
