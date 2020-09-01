@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['yolo\\yolov5\\train.py', 'yolo\\yolov5\\utils\\utils.py', 'yolo\\yolov5\\utils\\datasets.py', 'yolo\\yolov5_v1.py', 'yolo\\coco128_external.yaml']
+recent_files = ['yolo\\JSON2YOLO\\run.py', 'yolo\\JSON2YOLO\\utils.py']
 
