@@ -17,25 +17,28 @@
 
 import os
 import sys
+import platform
 import torch
 from IPython.display import Image, clear_output  # to display images
 from IPython import get_ipython
 
 #script dir [in case you use cd]
-scriptdir=os.getcwd()
+scriptdir= os.getcwd()
 
 #cuda or cpu version
 clear_output()
+print('OS: {}'.format(platform.platform()))
+#os.environ["CUDA_VISIBLE_DEVICES"]="" #force CPU
 print('Setup complete. Using torch %s %s' % (torch.__version__, torch.cuda.get_device_properties(0) if torch.cuda.is_available() else 'CPU'))
 
 
-# In[5]:
+# In[2]:
 
 
 print(scriptdir)
 
 
-# In[7]:
+# In[3]:
 
 
 #yolov5 repo [other ways: %cd yolov5; or pip install yolov5 module as "editable" using a setup.py file]
@@ -70,7 +73,7 @@ yolov5_dir=os.path.join(scriptdir, 'yolov5')
 # 3. based on the path and parameters yolov5 creates a torch dataloader (create_dataloader func) from the dataset images and labels
 # 
 
-# In[8]:
+# In[4]:
 
 
 #YAML Paths
@@ -81,32 +84,44 @@ coco128_yaml=os.path.join(scriptdir, 'coco128_external.yaml')
 # #### Dowload coco datasets in YOLOv5 (darknet) format
 # Download COCO val 2017 dataset, 1GB, 5000 images, and test model accuracy. (use function gdrive_dowload)
 
-# In[ ]:
+# In[5]:
 
 
 # Download COCO val2017
 """
 gdrive_download('1Y6Kou6kEB0ZEMCCpJSKStCor4KAReE43','coco2017val.zip')  # val2017 dataset
-get_ipython().system('mv ./coco /Volumes/Seagate/p19/external_datasets/coco  # move folder')
+!mv ./coco /Volumes/Seagate/p19/external_datasets/coco  # move folder
+"""
 
 
 # ##### OR
 # Download coco128 a small tutorial dataset composed of the first 128 images
 
-# In[3]:
+# In[6]:
 
 
 # Download coco128
-gdrive_download('1n_oKgR81BJtqk75b00eAjdv03qVCQn2f','coco128.zip')  # coco128 dataset
-get_ipython().system('mv ./coco128 /Volumes/Seagate/p19/external_datasets/coco128  # move folder')
-
 """
+gdrive_download('1n_oKgR81BJtqk75b00eAjdv03qVCQn2f','coco128.zip')  # coco128 dataset
+!mv ./coco128 /mnt/d/external_datasets/coco128_new  # move folder
+"""
+
+
 # ## preprocessing
 
 # ## processing
 
 # ### Train
 # Run the training command below to train `coco128.yaml` for 5 epochs. You can train YOLOv5s from scratch by passing `--cfg yolov5s.yaml --weights ''`, or train from a pretrained checkpoint by passing a matching weights file: `--cfg yolov5s.yaml --weights yolov5s.pt`.
+
+# In[7]:
+
+
+# Start tensorboard (optional)
+"""
+get_ipython().run_line_magic('load_ext', 'tensorboard')
+get_ipython().run_line_magic('tensorboard', '--logdir runs')
+"""
 
 # In[9]:
 
@@ -115,13 +130,11 @@ get_ipython().system('mv ./coco128 /Volumes/Seagate/p19/external_datasets/coco12
 # WINDOWS BUG 1 # UPDATE: yolov5.utils.increment_dir function error in windows path -update try: except: n=0 #UPDATE removed
 # WINDOWS BUG 2 : zip() function gives a keyerror
 # CODE BUG  : they use 'opt' var declared in if __name__ == '__main__': as a global var : #WARNING can only debug inside script, or you need to recreate the opt as global in your script
-
-
+# pip install -e will be the last resort
 get_ipython().run_line_magic('cd', '$yolov5_dir')
 get_ipython().system('pwd')
 get_ipython().system('ls')
-get_ipython().system('python train.py --img 640 --batch 16 --epochs 5 --data $coco128_yaml --cfg ./models/yolov5s.yaml --weights yolov5s.pt')
-
+get_ipython().system('python train.py --img 640 --batch 16 --epochs 3 --data $coco128_yaml --cfg ./models/yolov5s.yaml --weights yolov5s.pt --nosave --cache')
 
 
 # ## postprocessing
@@ -130,49 +143,21 @@ get_ipython().system('python train.py --img 640 --batch 16 --epochs 5 --data $co
 
 # ### Test
 
-# In[7]:
+# In[11]:
 
 
 # SHELL Ipython: Run YOLOv5x on COCO validation images
-"""
 get_ipython().run_line_magic('cd', '$yolov5_dir')
-get_ipython().system('pwd #current directory')
-get_ipython().system('ls #list directory')
-get_ipython().system("python test.py --weights yolov5x.pt --data $coco128_yaml --task 'val' --img 640")
-"""
-
-
-"""
-#WARNING it cant be used without argparse above, because they use opt. in __main__
-Don't install 
-data=coco128_yaml
-weights='yolov5x.pt'
-imgsz=640
-from yolo.yolov5 import test
-test.test(data,
-         weights=weights,
-         batch_size=16,
-         imgsz=imgsz,
-         conf_thres=0.001,
-         iou_thres=0.6,  # for NMS
-         save_json=False,
-         single_cls=False,
-         augment=False,
-         verbose=False,
-         model=None,
-         dataloader=None,
-         save_dir='',
-         merge=False)
-"""
-
-# In[5]:
-
-
+get_ipython().system('pwd')
+get_ipython().system('ls')
+get_ipython().system("python test.py --weights yolov5x.pt --data $coco_yaml --task 'val' --img 672")
 
 
 # ## NOMENCLATURE
 
-# In[10]:
+# In[13]:
+
+
 
 
 

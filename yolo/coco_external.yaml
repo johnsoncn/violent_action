@@ -8,9 +8,13 @@
 
 
 # train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train: /Volumes/Seagate/p19/external_datasets/coco/images/train2017/ # 118k images
-val: /Volumes/Seagate/p19/external_datasets/coco/images/val2017/  # 5k images
-test: /Volumes/Seagate/p19/external_datasets/coco/images/test2017/  # 20k images for submission to https://competitions.codalab.org/competitions/20794
+train:  /mnt/d/external_datasets/coco/images/val2017/ # 118k images
+val:  /mnt/d/external_datasets/coco/images/val2017/  # 5k images
+test:  /mnt/d/external_datasets/coco/images/val2017/  # 20k images for submission to https://competitions.codalab.org/competitions/20794
+
+#MAC train: /Volumes/Seagate/p19/external_datasets/coco/images/train2017/ # 118k images
+#WINDOWS train: D:/external_datasets/coco/images/train2017/
+#WSL train: /mnt/d/external_datasets/coco/images/train2017/
 
 # number of classes
 nc: 80

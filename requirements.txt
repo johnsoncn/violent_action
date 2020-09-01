@@ -1,13 +1,13 @@
 # pip install -U -r requirements.txt
 Cython
-numpy==1.17
+numpy
 opencv-python
-torch>=1.5.1
+torch==1.5.1
 matplotlib
 pillow
 tensorboard
 PyYAML>=5.3
-torchvision
+torchvision==0.6.1
 scipy
 tqdm
 git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
@@ -20,7 +20,23 @@ git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
 # conda install -yc anaconda numpy opencv matplotlib tqdm pillow ipython
 # conda install -yc conda-forge scikit-image pycocotools tensorboard
 # conda install -yc spyder-ide spyder-line-profiler
-# conda install -yc pytorch pytorch torchvision
+# BUG conda install pytorch torchvision cudatoolkit=10.1 -c pytorch #SOLUTION see below
 # conda install -yc conda-forge protobuf numpy && pip install onnx==1.6.0  # https://github.com/onnx/onnx#linux-and-macos
-# #WARNING windows pycocotools fails - use pip install git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
-# #WARNING windows install individually using conda
+
+# FAQs
+#------
+
+# #WARNING windows : pycocotools fails - use pip install git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
+# #WARNING windows : gives pip errors ; #SOLUTION installing individually with conda 
+# #WARNING windows : has path problems - see below
+# #WARNING (WSL-windows subsystem for linux) : pytorch problems 
+# #WARNING WSL : gives pip errors ; #SOLUTION installing with conda 
+# #WARNING WSL : CUDA LIMITATIONS ; #SOLUTION 1) update wsl to wsl 2 kernel: https://docs.microsoft.com/en-us/windows/wsl/install-win10#update-to-wsl-2  ; 2) install windows dev insider build >20150, install cuda-toolkit by following: https://docs.nvidia.com/cuda/wsl-user-guide/index.html #NOTE if ubuntu 2004, just change 1804 in paths; check using torch: import torch torch.cuda.is_available(); #NOTE Performance on GTX 1070: https://developer.nvidia.com/blog/announcing-cuda-on-windows-subsystem-for-linux-2/
+# #WARNING WSL : spyder needs GUI to work: #SOLUTION https://medium.com/@macasaetjohn/setting-up-a-spyder-environment-with-wsl-bb83716a44f3
+# #WARNING yolov5: runs are saved inside yolov5/runs/
+
+
+# #BUG WINDOWS yolov5 1 : yolov5.utils.increment_dir function error in windows path ; #SOLVED use (try: except: pass) #UPDATE rollback (because is better to try in linux WSL without changing yolov5 code)
+# #BUG yolov5 2 : zip(*[cache[x] for x in self.img_files]) in yolov5.utils.datasets gives keyerror; #SOLUTION delete cache in dataset, e.g. if img_files='/mnt/d/external_datasets/coco128/images/train2017/000000000073.jpg' and cache key = '/Volumes/Seagate/p19/external_datasets/coco128/images/train2017/000000000073.jpg' you will have a keyerror
+# #BUG CODE yolov5 : they use 'opt' var declared in if __name__ == '__main__': as a global var : #WARNING can only debug inside script, or you need to recreate the opt as global in your script; pip install -e will be the last resort
+# #BUG yolov5 pytorch: needs torch==1.5.1 and torchvisio==0.6.1: #SOLVED WSL with cuda: pip install torch==1.5.1+cu101 torchvision==0.6.1+cu101 -f https://download.pytorch.org/whl/torch_stable.html 

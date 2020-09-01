@@ -1,5 +1,4 @@
 .ipynb_checkpoints
 *.pyc
-#/yolo/yolov5
 .DS_Store
 /yolo/yolo.egg-info
