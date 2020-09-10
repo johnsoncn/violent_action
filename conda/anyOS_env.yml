@@ -1,0 +1,24 @@
+name: violent_action
+channels:
+  - defaults
+dependencies:
+  - python=3
+  - spyder
+  - nodejs
+  - xeus-python
+  - opencv
+  - pillow
+  - ipython
+  - matplotlib
+  - numpy
+  - tqdm
+  - spyder-line-profiler
+  - pytorch
+  - torchvision
+  - scikit-image
+  - tensorboard
+  - cython
+  - jupyterlab
+  - pandas
+  - lxml
+prefix: C:\Tools\miniconda3\envs\violent_action
