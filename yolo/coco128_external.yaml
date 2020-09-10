@@ -8,11 +8,11 @@
 
 
 # train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train: D:/external_datasets/coco128/images/train2017/  # 128 images
-val: D:/external_datasets/coco128/images/train2017/ # 128 images
-# Windows: D:/external_datasets/coco128/images/train2017/
-# WSL: /mnt/d/external_datasets/coco128/images/train2017/
-#MAC : /Volumes/Seagate/p19/external_datasets/coco128/images/train2017/ # 118k images
+train: D:/external_datasets/yoloformat/coco128/images/train2017/  # 128 images
+val: D:/external_datasets/yoloformat/coco128/images/train2017/ # 128 images
+# Windows: D:/external_datasets/yoloformat/
+# WSL: /mnt/d/external_datasets/yoloformat/
+# MAC : /Volumes/Seagate/p19/external_datasets/yoloformat/
 
 # number of classes
 nc: 80
