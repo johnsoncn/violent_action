@@ -371,7 +371,7 @@ def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=
             h, w, f = img['height'], img['width'], img['file_name']
             _, img_ext = os.path.splitext(f)
             img_fn = Path(f).stem
-            img_new_fn = '%g_%s' % (x['image_id'], img_fn) #x['image_id']+'_'+Path(f).stem #f.repace('/','_') # unique filename for image
+            img_new_fn ='%g' % (x['image_id']) # WARNING - it needs to be the an id
 
             # The Labelbox bounding box format is [top left x, top left y, width, height]
             box = np.array(x['bbox'], dtype=np.float64)

@@ -1,11 +1,11 @@
 
 # train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train: /Volumes/Seagate/p19/external_datasets/yoloformat/tao128/images/train/ 
-val: /Volumes/Seagate/p19/external_datasets/yoloformat/tao128/images/val/ 
-test:  /Volumes/Seagate/p19/external_datasets/yoloformat/tao128/images/val/ 
+train: /mnt/d/external_datasets/yoloformat/tao128/images/train/ 
+val: /mnt/d/external_datasets/yoloformat/tao128/images/val/ 
+test:  /mnt/d/external_datasets/yoloformat/tao128/images/val/ 
 
 # Windows: D:/external_datasets/yoloformat/
-# WSL: /mnt/d/external_datasets/yoloformat/s
+# WSL: /mnt/d/external_datasets/yoloformat/
 # MAC : /Volumes/Seagate/p19/external_datasets/yoloformat/
 
 # number of classes
