@@ -1,7 +1,7 @@
 REM START VIOLENT ACTION ENV
 
 @echo OFF
-title violent_action env
+title violent_action
 
 echo Hello! This is a batch to start violent_action jupyter.
 
