@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 # ## Merge Functions
 
-def init_json(file='mlab.json'):
+def init_json(file='mola.json'):
     output = {
         "info": None,
         "licenses": [],
@@ -44,29 +44,29 @@ def init_json(file='mlab.json'):
     print("JSON INITIATED : {}".format(file))
 
 
-def last_value(mlabjson, key="categories", subkey="id", initvalue=None):
+def last_value(molajson, key="categories", subkey="id", initvalue=None):
     last_value = initvalue
-    l = mlabjson[key]
+    l = molajson[key]
     if l:
-        last = mlabjson[key][-1]
+        last = molajson[key][-1]
         if last[subkey]: last_value = last[subkey]
     return last_value
 
 
-def merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=1, key="images", indexed_key='image_id', root_dir=None,
+def merge_keys(molajson, newjson, keys_struct_d, dataset_id=1, key="images", indexed_key='image_id', root_dir=None,
                dir_key=['file_name', 'video']):
     # NOTE: root_dir format str: 'root/path/'
-    # NOTE: should update mlabjson and newjson
+    # NOTE: should update molajson and newjson
 
     # ###update newjson
-    mlab_last_id = last_value(mlabjson, key=key, subkey="id", initvalue=0)  # get last key value
+    mola_last_id = last_value(molajson, key=key, subkey="id", initvalue=0)  # get last key value
     original_id_a = []
     new_id_a = []
     # #update key
     for ik, k in enumerate(tqdm(newjson[key], desc='update key: {}'.format(key))):  # update keys and values
         if isinstance(k, dict):  # in case is "info": str or 'licenses' : ['unknown']
             original_id = k['id']
-            new_id = mlab_last_id + (ik + 1)
+            new_id = mola_last_id + (ik + 1)
             original_id_a.append(original_id)
             new_id_a.append(new_id)
             # ('original id : {} > new id: {}'.format(original_id, new_id))
@@ -98,10 +98,10 @@ def merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=1, key="images", ind
                         # print('#WARNING: Problem in indexing: {}'.format(repr(e)))
                         continue
             # print("{} id substitutions: {}".format(nj_k,subs))
-    # ###update mlabjson
-    mlabjson[key] = mlabjson[key] + newjson[key]  # merge newjson : + or .extend()
+    # ###update molajson
+    molajson[key] = molajson[key] + newjson[key]  # merge newjson : + or .extend()
 
-    return mlabjson, newjson
+    return molajson, newjson
 
 
 # ## Fix categories Functions
@@ -109,7 +109,7 @@ def merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=1, key="images", ind
 def display_imgs(rdir, i, dset_l, classes_l_catid, classes_l_dset, classes_l_imgid, img_l, img_l_id, imgidx=0):
     for ii, did in enumerate(
             classes_l_catid[i]):  # WARNING: only in classes each id should correspond to a different dataset
-        print(dset_l[classes_l_dset[i][ii][imgidx] - 1])  # WARNING: it works because mlabjson[datasets] is ordered
+        print(dset_l[classes_l_dset[i][ii][imgidx] - 1])  # WARNING: it works because molajson[datasets] is ordered
         imgid = classes_l_imgid[i][ii][imgidx]
         img_l_idx = img_l_id.index(imgid)  # np.where(img_l_id_np==imgid)[0].tolist()
         imgpath = rdir + img_l[img_l_idx]
@@ -170,7 +170,7 @@ def save_imgs(dataframe, rdir, path, i, dset_l, classes_l, classes_l_catid, clas
             continue
 
         dataset = dset_l[
-            classes_l_dset[i][ii][startidx] - 1]  # #WARNING: it works because mlabjson[datasets] is ordered
+            classes_l_dset[i][ii][startidx] - 1]  # #WARNING: it works because molajson[datasets] is ordered
         print(dataset)
         # SAVE IMAGE
         dpi = 80
@@ -342,15 +342,15 @@ def assure_path_exists(path):
 if __name__ == '__main__':
     # ## Run merge functions
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mlabfile', type=str, default='mlab.json', help='mlab json path')
+    parser.add_argument('--molafile', type=str, default='mola.json', help='mola json path')
     parser.add_argument('--mergefile', type=str, help='annotation to merge json path')
     parser.add_argument('--dataset_id', type=int, help='view this script in init_json() the dataset id')
     parser.add_argument('--root_dir', type=str, default=None, help='root dir of the datasets location')
     parser.add_argument('--dir_key', nargs="+", default=['file_name', 'video'], help='key to change the root_dir')
-    parser.add_argument('--initjson', action='store_true', help='create the mlab.json, or initiae it again')
+    parser.add_argument('--initjson', action='store_true', help='create the mola.json, or initiae it again')
     opt = parser.parse_args()
 
-    mlabjsonfile = opt.mlabfile
+    molajsonfile = opt.molafile
     newjsonfile = opt.mergefile
     dataset_id = opt.dataset_id
     root_dir = opt.root_dir
@@ -359,10 +359,10 @@ if __name__ == '__main__':
     print('\n>>' + str(opt))
 
     # INIT JSON
-    if initjson: init_json(file=mlabjsonfile)
+    if initjson: init_json(file=molajsonfile)
 
     # LOAD JSONS
-    mlabjson = json.load(open(mlabjsonfile))
+    molajson = json.load(open(molajsonfile))
     newjson = json.load(open(newjsonfile))
 
     # GEG JSON STRUCK
@@ -380,7 +380,7 @@ if __name__ == '__main__':
         print('\n >> MERGING LICENSES...')
         key = 'licenses'
         indexed_key = 'license'
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
                                        indexed_key=indexed_key)
     except Exception as e:
         print('#WARNING: Problem in Merging: {}'.format(repr(e)))
@@ -391,7 +391,7 @@ if __name__ == '__main__':
         print('\n >> MERGING CATEGORIES...')
         key = 'categories'
         indexed_key = 'category_id'
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
                                        indexed_key=indexed_key)
     except Exception as e:
         print('#WARNING: Problem in Merging: {}'.format(repr(e)))
@@ -402,7 +402,7 @@ if __name__ == '__main__':
         print('\n >> MERGING VIDEOS...')
         key = 'videos'
         indexed_key = 'video_id'
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, key=key, dataset_id=dataset_id,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, key=key, dataset_id=dataset_id,
                                        indexed_key=indexed_key,
                                        root_dir=root_dir,
                                        dir_key=dir_key)
@@ -415,7 +415,7 @@ if __name__ == '__main__':
         print('\n >> MERGING IMAGES...')
         key = 'images'
         indexed_key = 'image_id'
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, key=key, dataset_id=dataset_id,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, key=key, dataset_id=dataset_id,
                                        indexed_key=indexed_key,
                                        root_dir=root_dir,
                                        dir_key=dir_key)
@@ -428,7 +428,7 @@ if __name__ == '__main__':
         print('\n >> MERGING TRACKS...')
         key = 'tracks'
         indexed_key = 'track_id'
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
                                        indexed_key=indexed_key,
                                        root_dir=root_dir, dir_key=dir_key)
     except Exception as e:
@@ -440,7 +440,7 @@ if __name__ == '__main__':
         print('\n >> MERGING SEGMENT_INFO...')
         key = 'segment_info'
         indexed_key = None
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
                                        indexed_key=indexed_key,
                                        root_dir=root_dir,
                                        dir_key=dir_key)
@@ -453,7 +453,7 @@ if __name__ == '__main__':
         print('\n >> MERGING ANNOTATIONS...')
         key = 'annotations'
         indexed_key = None
-        mlabjson, newjson = merge_keys(mlabjson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
+        molajson, newjson = merge_keys(molajson, newjson, keys_struct_d, dataset_id=dataset_id, key=key,
                                        indexed_key=indexed_key)
     except Exception as e:
         print('Problem in Merging licences: {}'.format(repr(e)))
@@ -461,6 +461,6 @@ if __name__ == '__main__':
 
     # SAVE JSON
     print('\n >> SAVING...')
-    with open(mlabjsonfile, 'w') as f:
-        json.dump(mlabjson, f)
-    print("JSON SAVED : {}".format(mlabjsonfile))
+    with open(molajsonfile, 'w') as f:
+        json.dump(molajson, f)
+    print("JSON SAVED : {}".format(molajsonfile))

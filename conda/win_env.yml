@@ -39,6 +39,7 @@ dependencies:
   - diff-match-patch=20200713=py_0
   - entrypoints=0.3=py38_0
   - enum34=1.1.10=py38h32f6830_1
+  - et_xmlfile=1.0.1=py_1001
   - flake8=3.8.3=py_0
   - freetype=2.10.2=hd328e21_0
   - future=0.18.2=py38_1
@@ -60,6 +61,7 @@ dependencies:
   - ipython=7.16.1=py38h5ca1d4c_0
   - ipython_genutils=0.2.0=py38_0
   - isort=4.3.21=py38_0
+  - jdcal=1.4.1=py_0
   - jedi=0.15.2=py38_0
   - jinja2=2.11.2=py_0
   - jpeg=9b=hb83a4c4_2
@@ -112,7 +114,8 @@ dependencies:
   - oauthlib=3.1.0=py_0
   - olefile=0.46=py_0
   - opencv=4.0.1=py38h2a7c758_0
-  - openssl=1.1.1g=he774522_1
+  - openpyxl=3.0.5=py_0
+  - openssl=1.1.1h=he774522_0
   - packaging=20.4=py_0
   - pandas=1.1.0=py38ha925a31_0
   - pandoc=2.10=0
@@ -215,6 +218,7 @@ dependencies:
   - wrapt=1.11.2=py38he774522_0
   - xeus=0.24.1=h7ef1ec2_0
   - xeus-python=0.8.3=py38h6a11f7f_0
+  - xlrd=1.2.0=py_0
   - xz=5.2.5=h62dcd97_0
   - yaml=0.2.5=he774522_0
   - yapf=0.30.0=py_0

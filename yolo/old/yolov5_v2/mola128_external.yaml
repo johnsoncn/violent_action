@@ -1,0 +1,21 @@
+
+# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
+#1
+#train: D:/external_datasets/MOLA/yoloformat/mola8/images/train/ 
+#val: D:/external_datasets/MOLA/yoloformat/mola8/images/val/ 
+#test:  D:/external_datasets/MOLA/yoloformat/mola8/images/test/ 
+#2
+train: D:/external_datasets/MOLA/yoloformat/mola128/train.txt
+val: D:/external_datasets/MOLA/yoloformat/mola128/train.txt 
+test:  D:/external_datasets/MOLA/yoloformat/mola128/train.txt
+
+
+# Windows: D:/external_datasets/yoloformat/
+# WSL: /mnt/d/external_datasets/yoloformat/
+# MAC : /Volumes/Seagate/p19/external_datasets/yoloformat/
+
+# number of classes
+nc: 2
+
+# class names
+names: ['aggressive', 'nonaggressive']

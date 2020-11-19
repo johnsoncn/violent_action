@@ -1,14 +1,17 @@
 import json
+from shutil import copyfile
+
+import os
+import tqdm
 
 import cv2
 import pandas as pd
-from PIL import Image
+#from PIL import Image
 
-import os
-from shutil import copyfile
+import argparse
 
-from yolo.json2yolo.utils import *
-make_folders()
+from utils import *
+
 
 # Convert Labelbox JSON file into YOLO-format labels ---------------------------
 def convert_labelbox_json(name, file):
@@ -337,16 +340,15 @@ def convert_coco_json(json_dir='../coco/annotations/'):
 
 
 # Convert tao JSON file into YOLO-format labels --------------------------------
-def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=True, img_number=None):
+def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=False, img_number=None):
     dir = make_folders(path=outdir)  # output directory
     jsons = glob.glob(json_dir + '*.json')
-    #tao_cat_idx = [x for x in range(833)]  # object catagories index - 833 cat = 488 LVIS + 345 free-form
-
+    # tao_cat_idx = [x for x in range(833)]  # object catagories index - 833 cat = 488 LVIS + 345 free-form
 
     # Import json
     for json_file in sorted(jsons):
         labeldir_path = 'labels/%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
-        imgdir_path = 'images/%s/' % Path(json_file).stem # folder name (train, val, test) remove other info
+        imgdir_path = 'images/%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
         dir_label = outdir + labeldir_path
         os.mkdir(dir_label)
         dir_img = outdir + imgdir_path
@@ -355,9 +357,9 @@ def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=
             data = json.load(f)
 
         # image array
-        img_a=[]
+        img_a = []
         # image counter
-        img_counter=0
+        img_counter = 0
 
         # Create image dict
         images = {'%g' % x['id']: x for x in data['images']}
@@ -371,7 +373,7 @@ def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=
             h, w, f = img['height'], img['width'], img['file_name']
             _, img_ext = os.path.splitext(f)
             img_fn = Path(f).stem
-            img_new_fn ='%g' % (x['image_id']) # WARNING - it needs to be the an id
+            img_new_fn = '%g' % (x['image_id'])  # WARNING - it needs to be the an id
 
             # The Labelbox bounding box format is [top left x, top left y, width, height]
             box = np.array(x['bbox'], dtype=np.float64)
@@ -384,35 +386,135 @@ def convert_tao_json(json_dir='../tao/annotations/', outdir='out/', copy_images=
                 with open(dir_label + img_new_fn + '.txt', 'a') as file:
                     file.write('%g %.6f %.6f %.6f %.6f\n' % (x['category_id'] - 1, *box))
                 # write images
-                if not (any([True for im in img_a if im.find(str(x['image_id']))>-1])): # don't repeat
-                    img_a.append(str(x['image_id'])) #
+                if not (any([True for im in img_a if im.find(str(x['image_id'])) > -1])):  # don't repeat
+                    img_a.append(str(x['image_id']))  #
                     try:
                         # copy imgs
                         if copy_images:
-                            tao_root_dir=os.path.dirname(os.path.dirname(json_dir))
-                            src=os.path.join(tao_root_dir, 'frames', f)
-                            dst=os.path.join(dir_img, img_new_fn + img_ext)
-                            copyfile(src, dst) #missing files
+                            tao_root_dir = os.path.dirname(os.path.dirname(json_dir))
+                            src = os.path.join(tao_root_dir, 'frames', f)
+                            dst = os.path.join(dir_img, img_new_fn + img_ext)
+                            copyfile(src, dst)  # missing files
                         # save img path (if image copied)
-                        with open(outdir + Path(json_file).stem  + '.txt', 'a+') as file:
-                            img_new_path='%s\n' % (imgdir_path + img_new_fn + img_ext)
+                        with open(outdir + Path(json_file).stem + '.txt', 'a+') as file:
+                            img_new_path = '%s\n' % (imgdir_path + img_new_fn + img_ext)
                             file.write(img_new_path)
-                        img_counter+=1
+                        img_counter += 1
                     except:
-                        img_a[-1]=img_a[-1]+'_MISSING'
+                        img_a[-1] = img_a[-1] + '_MISSING'
                         print("missing : {}".format(os.path.join(tao_root_dir, 'frames', f)))
                         print(img_a[-1])
 
-            #STOP
-            if img_number and img_counter>=img_number: break
+            # STOP
+            if img_number and img_counter >= img_number: break
 
 
+# Convert motionLab JSON file into YOLO-format labels --------------------------------
+def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, img_number=None):
+    dir = make_folders(path=outdir)  # output directory
+    jsons = glob.glob(json_dir + '*.json')
+    # tao_cat_idx = [x for x in range(833)]  # object catagories index - 833 cat = 488 LVIS + 345 free-form
+
+    # Import json
+    for json_file in sorted(jsons):
+        labeldir_path = 'labels/%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
+        imgdir_path = 'images/%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
+        dir_label = outdir + labeldir_path
+        os.mkdir(dir_label)
+        dir_img = outdir + imgdir_path
+        os.mkdir(dir_img)
+        with open(json_file) as f:
+            data = json.load(f)
+
+        # image array
+        img_a = []
+        # image counter
+        img_counter = 0
+
+        # Create image dict {id: image}
+        images = {'%g' % x['id']: x for x in data['images']}
+
+        # Write labels file
+        for x in tqdm(data['annotations'], desc='Annotations %s' % json_file):
+            try:
+                if x['iscrowd']: continue
+            except:
+                print('missing "iscrowd" key')
+
+            img = images['%g' % x['image_id']]
+            h, w, f = img['height'], img['width'], img['file_name']
+            _, img_ext = os.path.splitext(f)
+            img_fn = Path(f).stem
+            img_new_fn = img_fn #original filename - if the images are not copied mantain original path
+            if copy_images: img_new_fn = '%g' % (x['image_id'])  # WARNING - it needs to be the an id
+
+            # The Labelbox bounding box format is [top left x, top left y, width, height]
+            box = np.array(x['bbox'], dtype=np.float64)
+            box[:2] += box[2:] / 2  # xy top-left corner to center
+            box[[0, 2]] /= w  # normalize x
+            box[[1, 3]] /= h  # normalize y
+
+            if (box[2] > 0.) and (box[3] > 0.):  # if w > 0 and h > 0
+                # write labels
+                with open(dir_label + img_new_fn + '.txt', 'a') as file:
+                    file.write('%g %.6f %.6f %.6f %.6f\n' % (x['category_id'] - 1, *box))
+                # write images
+                if not (any([True for im in img_a if im.find(str(x['image_id'])) > -1])):  # don't repeat
+                    img_a.append(str(x['image_id']))  #
+                    try:
+                        # copy imgs
+                        if copy_images:
+                            src = os.path.join(datasets_root_dir, f)
+                            dst = os.path.join(dir_img, img_new_fn + img_ext)
+                            copyfile(src, dst)  # missing files
+                        # save img path (if image copied)
+                        with open(outdir + Path(json_file).stem + '.txt', 'a+') as file:
+                            img_new_path = '%s\n' % Path(os.path.join(datasets_root_dir, f)) #original path
+                            if copy_images: img_new_path = '%s\n' % Path(outdir+imgdir_path + img_new_fn + img_ext) #new path
+                            file.write(img_new_path)
+                        img_counter += 1
+                    except:
+                        img_a[-1] = img_a[-1] + '_MISSING'
+                        print("missing : {}".format(Path(os.path.join(datasets_root_dir, f))))
+                        print(img_a[-1])
+
+            # STOP
+            if img_number and img_counter >= img_number: break
 
 
 if __name__ == '__main__':
-    source = 'tao'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--source', type=str, default='mola', help='source type to convert')
+    parser.add_argument('--datasets_root_dir', type=str,
+                        default=None,
+                        help='root dir for all the datasets')
+    parser.add_argument('--json_dir', type=str,
+                        default='D:/external_datasets/MOLA/annotations/train_mlab_mix_aggressive/',
+                        help='json annotations input path')
+    parser.add_argument('--outdir', type=str,
+                        default="D:/external_datasets/MOLA/yoloformat/mola_train/",
+                        help='yoloformat dataset output path')
+    parser.add_argument('--img_number', type=int, default=None, help='number of images to convert. None=convert all')
+    parser.add_argument('--copy_images', type=int, default=0, help='copy images to folder /images and add new path to .txt . If 0 no image is copied and .txt has the original paths')
+    opt = parser.parse_args()
 
-    if source == 'labelbox':  # Labelbox https://labelbox.com/
+    source = opt.source
+    datasets_root_dir = opt.datasets_root_dir
+    json_dir = opt.json_dir
+    outdir = opt.outdir
+    img_number = opt.img_number
+    copy_images = False
+    if opt.copy_images == 1: copy_images = True
+    print('\n>>' + str(opt))
+
+    if not datasets_root_dir: raise RuntimeError('Select datasets_root_dir')
+
+    if source == 'mola':
+        # CREATE LABELS and IMAGES FOLDER
+        convert_mola_json(datasets_root_dir=datasets_root_dir, json_dir=json_dir,
+                          outdir=outdir, img_number=img_number, copy_images=copy_images)
+
+    elif source == 'labelbox':  # Labelbox https://labelbox.com/
         convert_labelbox_json(name='supermarket2',
                               file='../supermarket2/export-coco.json')
 
@@ -430,43 +532,46 @@ if __name__ == '__main__':
         convert_ath_json(json_dir='../../Downloads/athena/')  # images folder
 
     elif source == 'coco':
-        convert_coco_json()
+        convert_coco_json(json_dir=json_dir)
 
     elif source == 'tao':
-        #CREATE LABELS and IMAGES FOLDER
-        convert=True
+        # CREATE LABELS and IMAGES FOLDER
+        convert = True
         if convert:
-            convert_tao_json(json_dir='D:/external_datasets/TAO/TAO_DIR/annotations/', outdir="D:/external_datasets/yoloformat/tao128/", img_number=128)
+            convert_tao_json(json_dir=json_dir,
+                             outdir=outdir, img_number=img_number)
 
-        #EXTRACT INFORMATION
-        taofile='D:/external_datasets/TAO_old/TAO_DIR/annotations/train.json'#'D:/external_datasets/TAO/TAO_DIR/annotations'
-        toolkit=False
-        if toolkit:#using tao toolkit
+        # EXTRACT INFORMATION
+        taofile = 'D:/external_datasets/TAO_old/TAO_DIR/annotations/train.json'  # 'D:/external_datasets/TAO/TAO_DIR/annotations'
+        toolkit = False
+        if toolkit:  # using tao toolkit
             import tao
             from tao.toolkit.tao import tao
-            TAO = tao.Tao(taofile) #class
-            print("nc: {}".format(len(TAO.get_cat_ids())))
-            #print("catagories: \n {}".format(TAO.load_cats(ids=None)))
 
-        extract_cats=False
+            TAO = tao.Tao(taofile)  # class
+            print("nc: {}".format(len(TAO.get_cat_ids())))
+            # print("catagories: \n {}".format(TAO.load_cats(ids=None)))
+
+        extract_cats = False
         if extract_cats:
-            #TODO obj catagories extraction
-            #https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
-            with open(taofile,'r') as f:
+            # TODO obj catagories extraction
+            # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+            with open(taofile, 'r') as f:
                 js = json.loads(f.read())
-                print (json.dumps(js['categories'],sort_keys=True, indent=4))
-                #print("nc: {}".format(len(js['categories'])))
-                cat_names=[]
+                print(json.dumps(js['categories'], sort_keys=True, indent=4))
+                # print("nc: {}".format(len(js['categories'])))
+                cat_names = []
                 for cat in js['categories']:
                     cat_names.append(cat['name'])
                 print(cat_names)
                 print(len(cat_names))
-                catid=[]
+                catid = []
                 for an in js['annotations']:
                     catid.append(an['category_id'])
                 catid.sort()
                 print(catid)
                 print(len(catid))
+
 
 
     # zip results

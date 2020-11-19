@@ -1,0 +1,29 @@
+name: violent_action
+channels:
+  - spyder-ide
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3
+  - spyder
+  - nodejs
+  - opencv
+  - pillow
+  - ipython
+  - pip
+  - matplotlib
+  - numpy
+  - tqdm
+  - pytorch
+  - torchvision
+  - cudatoolkit
+  - scikit-image
+  - tensorboard
+  - cython
+  - jupyterlab
+  - pandas
+  - lxml
+  - pip:
+    - pycocotools==2.0
+prefix: C:\Tools\miniconda3\envs\violent_action

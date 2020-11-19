@@ -1,5 +1,5 @@
 # violent_action
-Uminho MotionLab P19 violent action
+Uminho MotionLab P19 violent action machine learning algorithms
 
 ## objectives:
 

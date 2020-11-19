@@ -1,0 +1,124 @@
+parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
+parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
+parser.add_argument('--data', type=str, default='data/coco128.yaml', help='data.yaml path')
+parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
+parser.add_argument('--epochs', type=int, default=300)
+parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs')
+parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
+parser.add_argument('--rect', action='store_true', help='rectangular training')
+parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
+parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
+parser.add_argument('--notest', action='store_true', help='only test final epoch')
+parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
+parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
+parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
+parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
+parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
+parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
+parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
+parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
+parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
+parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
+parser.add_argument('--log-imgs', type=int, default=16, help='number of images for W&B logging, max 100')
+parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
+parser.add_argument('--project', default='runs/train', help='save to project/name')
+parser.add_argument('--name', default='exp', help='save to project/name')
+parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
+
+# Resume
+if opt.resume:  # resume an interrupted run from checkpoint
+
+# DDP mode
+device = select_device(opt.device, batch_size=opt.batch_size)
+if opt.local_rank != -1:  # pytorch performs distributed data parallel training (DDP)
+
+# Hyperparameters
+with open(opt.hyp) as f:
+    # opt.hyp=data/hyp.scratch.yaml
+    # Hyperparameters for COCO training from scratch
+    # python train.py --batch 40 --cfg yolov5m.yaml --weights '' --data coco.yaml --img 640 --epochs 300
+    # See tutorials for hyperparameter evolution https://github.com/ultralytics/yolov5#tutorials
+
+    lr0: 0.01  # initial learning rate (SGD=1E-2, Adam=1E-3)
+    lrf: 0.2  # final OneCycleLR learning rate (lr0 * lrf)
+    momentum: 0.937  # SGD momentum/Adam beta1
+    weight_decay: 0.0005  # optimizer weight decay 5e-4
+    warmup_epochs: 3.0  # warmup epochs (fractions ok)
+    warmup_momentum: 0.8  # warmup initial momentum
+    warmup_bias_lr: 0.1  # warmup initial bias lr
+    box: 0.05  # box loss gain
+    cls: 0.5  # cls loss gain
+    cls_pw: 1.0  # cls BCELoss positive_weight
+    obj: 1.0  # obj loss gain (scale with pixels)
+    obj_pw: 1.0  # obj BCELoss positive_weight
+    iou_t: 0.20  # IoU training threshold
+    anchor_t: 4.0  # anchor-multiple threshold
+    # anchors: 3  # anchors per output layer (0 to ignore)
+    fl_gamma: 0.0  # focal loss gamma (efficientDet default gamma=1.5)
+    hsv_h: 0.015  # image HSV-Hue augmentation (fraction)
+    hsv_s: 0.7  # image HSV-Saturation augmentation (fraction)
+    hsv_v: 0.4  # image HSV-Value augmentation (fraction)
+    degrees: 0.0  # image rotation (+/- deg)
+    translate: 0.1  # image translation (+/- fraction)
+    scale: 0.5  # image scale (+/- gain)
+    shear: 0.0  # image shear (+/- deg)
+    perspective: 0.0  # image perspective (+/- fraction), range 0-0.001
+    flipud: 0.0  # image flip up-down (probability)
+    fliplr: 0.5  # image flip left-right (probability)
+    mosaic: 1.0  # image mosaic (probability)
+    mixup: 0.0  # image mixup (probability)
+
+
+# Train
+logger.info(opt)
+if not opt.evolve:
+    train(hyp, opt, device, tb_writer, wandb)
+
+# Evolve hyperparameters (optional)
+else:
+    # Evolve hyperparameters (optional)
+    # Hyperparameter evolution metadata (mutation scale 0-1, lower_limit, upper_limit)
+    meta = {'lr0': (1, 1e-5, 1e-1),  # initial learning rate (SGD=1E-2, Adam=1E-3)
+            'lrf': (1, 0.01, 1.0),  # final OneCycleLR learning rate (lr0 * lrf)
+            'momentum': (0.3, 0.6, 0.98),  # SGD momentum/Adam beta1
+            'weight_decay': (1, 0.0, 0.001),  # optimizer weight decay
+            'warmup_epochs': (1, 0.0, 5.0),  # warmup epochs (fractions ok)
+            'warmup_momentum': (1, 0.0, 0.95),  # warmup initial momentum
+            'warmup_bias_lr': (1, 0.0, 0.2),  # warmup initial bias lr
+            'box': (1, 0.02, 0.2),  # box loss gain
+            'cls': (1, 0.2, 4.0),  # cls loss gain
+            'cls_pw': (1, 0.5, 2.0),  # cls BCELoss positive_weight
+            'obj': (1, 0.2, 4.0),  # obj loss gain (scale with pixels)
+            'obj_pw': (1, 0.5, 2.0),  # obj BCELoss positive_weight
+            'iou_t': (0, 0.1, 0.7),  # IoU training threshold
+            'anchor_t': (1, 2.0, 8.0),  # anchor-multiple threshold
+            'anchors': (2, 2.0, 10.0),  # anchors per output grid (0 to ignore)
+            'fl_gamma': (0, 0.0, 2.0),  # focal loss gamma (efficientDet default gamma=1.5)
+            'hsv_h': (1, 0.0, 0.1),  # image HSV-Hue augmentation (fraction)
+            'hsv_s': (1, 0.0, 0.9),  # image HSV-Saturation augmentation (fraction)
+            'hsv_v': (1, 0.0, 0.9),  # image HSV-Value augmentation (fraction)
+            'degrees': (1, 0.0, 45.0),  # image rotation (+/- deg)
+            'translate': (1, 0.0, 0.9),  # image translation (+/- fraction)
+            'scale': (1, 0.0, 0.9),  # image scale (+/- gain)
+            'shear': (1, 0.0, 10.0),  # image shear (+/- deg)
+            'perspective': (0, 0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
+            'flipud': (1, 0.0, 1.0),  # image flip up-down (probability)
+            'fliplr': (0, 0.0, 1.0),  # image flip left-right (probability)
+            'mosaic': (1, 0.0, 1.0),  # image mixup (probability)
+            'mixup': (1, 0.0, 1.0)}  # image mixup (probability)
+
+    for _ in range(300):  # generations to evolve
+        if Path('evolve.txt').exists():  # if evolve.txt exists: select best hyps and mutate
+            # Mutate
+        # Constrain to limits
+        for k, v in meta.items():
+            hyp[k] = max(hyp[k], v[1])  # lower limit
+            hyp[k] = min(hyp[k], v[2])  # upper limit
+            hyp[k] = round(hyp[k], 5)  # significant digits
+
+        # Train mutation
+        results = train(hyp.copy(), opt, device, wandb=wandb)
+
+        # Write mutation results
+        print_mutation(hyp.copy(), results, yaml_file, opt.bucket)
