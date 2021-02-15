@@ -1,0 +1,16 @@
+#JB 07122020 - yolov5_v3.1
+UPDATE: force dataloader to only load only the first time
+
+45: def train(hyp, opt, device, tb_writer=None, wandb=None, dataloader=None, dataset=None, testloader=None): #JB 07122020
+184:# Trainloader
+    if dataloader==None: #JB 07122020
+        dataloader, dataset = create_dataloader(
+197:if testloader==None: #JB 07122020
+            testloader = create_dataloader(
+411:return [results,dataloader,dataset,testloader] #JB 07122020
+535:	# create the empty dataloaders #JB 07122020
+        dataloader=None
+        dataset=None
+        testloader=None
+572:    # Train mutation #JB 07122020
+        [results,dataloader,dataset,testloader] = train(hyp.copy(), opt, device, wandb=wandb, dataloader=dataloader, dataset=dataset, testloader=testloader)

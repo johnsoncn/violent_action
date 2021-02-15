@@ -308,6 +308,12 @@ def convert_unicode(uni, method='liststr'):
                       uni.strip('[]').split('],')]
         except:
             pass
+    if method == 'itemnum':
+        result = []
+        try:
+            result = int(uni.strip('[]'))  # uni.strip('[]').split(',') #[value for value in uni.strip('[]').split(',')]
+        except:
+            pass
 
     return result
 

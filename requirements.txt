@@ -1,18 +1,20 @@
-# pip install -r requirements.txt
+# WARNING: For easier installation use the "conda env create -f basic_anyOS_env.yml"
+# WARNING: For installing the requirements using this script use "pip install -r requirements.txt"
 
-# base yolov5_v3.1---------------------------------------- #BUG in pip windows install with conda
+# base yolov5_v3.1
+#------------------------------- 
 Cython
-matplotlib>=3.2.2
+matplotlib>=3.2.2 #BUG pip windows - use conda 
 numpy>=1.18.5
 opencv-python>=4.1.2
 Pillow
 PyYAML>=5.3
 scipy>=1.4.1
 tensorboard>=2.2
-torch>=1.6.0
-torchvision>=0.7.0
-cudatoolkit==10.1
 tqdm>=4.41.0
+#torch>=1.6.0 #BUG pip windows and ubuntu in environment - go to https://pytorch.org/get-started/locally/ - #SOLUTION CONDA install
+#torchvision>=0.7.0
+#cudatoolkit==10.1
 
 # logging -------------------------------------
 # wandb
@@ -48,8 +50,38 @@ tqdm>=4.41.0
 # jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 
+# base fairmot 2020.09.10 
+#------------------------------- 
+yacs
+opencv-python
+cython
+cython-bbox
+scipy
+numba
+progress
+motmetrics
+matplotlib
+lap
+openpyxl
+Pillow
+tensorboardX
+
+#SOLUTION CONDA install
+#conda install pytorch>=1.2.0 torchvision>=0.4.0 cudatoolkit=10.0 -c pytorch - go to https://pytorch.org/get-started/locally/ 
+
+
+
 # FAQs
-#------
+#-------------
+
+# YOLOv5 -------
+
+#SOLUTION UPDATE YOLOv5. In WSL, using (base) conda [other envs give same torch error] and  1)sudo rm -rf yolov5  # remove existing; 2) git clone https://github.com/ultralytics/yolov5 && cd yolov5 # clone latest; 3)pip install -qr requirements.txt 4)python detect.py  # verify detection 
+#SOLUTION in Windows, install using conda commands
+
+# #WARNING #BUG torch.nn.modules.module.ModuleAttributeError: 'Detect' object has no attribute 'm' : #SOLUTION recolone repo when updating: 1) copy old version yolov5 folder to old folder; 2) git clone yolov5 to yolo folder;  or just remove the weights from yolov5 folder from the previous version.
+#https://github.com/ultralytics/yolov5/releases
+#https://github.com/ultralytics/yolov5/issues/690
 
 # #WARNING windows : pycocotools fails - use pip install git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
 # #WARNING windows : gives pip errors ; #SOLUTION installing individually with conda 
@@ -61,7 +93,11 @@ tqdm>=4.41.0
 # #WARNING yolov5: runs are saved inside yolov5/runs/
 
 
-# #BUG WINDOWS yolov5 1 : yolov5.utils.increment_dir function error in windows path ; #SOLVED use (try: except: pass)
-# #BUG yolov5 2 : zip(*[cache[x] for x in self.img_files]) in yolov5.utils.datasets gives keyerror; #SOLUTION delete cache in dataset, e.g. if img_files='/mnt/d/external_datasets/coco128/images/train2017/000000000073.jpg' and cache key = '/Volumes/Seagate/p19/external_datasets/coco128/images/train2017/000000000073.jpg' you will have a keyerror
-# #BUG CODE yolov5 : they use 'opt' var declared in if __name__ == '__main__': as a global var : #WARNING can only debug inside script, or you need to recreate the opt as global in your script; pip install -e will be the last resort
-# #BUG yolov5 pytorch: needs torch==1.5.1 and torchvision==0.6.1: #SOLVED WSL with cuda: pip install torch==1.5.1+cu101 torchvision==0.6.1+cu101 -f https://download.pytorch.org/whl/torch_stable.html 
+# #BUG WINDOWS yolov5_v2 1 : yolov5.utils.increment_dir function error in windows path ; #SOLVED use (try: except: pass)
+# #BUG yolov5_v2 2 : zip(*[cache[x] for x in self.img_files]) in yolov5.utils.datasets gives keyerror; #SOLUTION delete cache in dataset, e.g. if img_files='/mnt/d/external_datasets/coco128/images/train2017/000000000073.jpg' and cache key = '/Volumes/Seagate/p19/external_datasets/coco128/images/train2017/000000000073.jpg' you will have a keyerror
+# #BUG CODE yolov5_v2 : they use 'opt' var declared in if __name__ == '__main__': as a global var : #WARNING can only debug inside script, or you need to recreate the opt as global in your script; pip install -e will be the last resort
+# #BUG yolov5_v2 pytorch: needs torch==1.5.1 and torchvision==0.6.1: #SOLVED WSL with cuda: pip install torch==1.5.1+cu101 torchvision==0.6.1+cu101 -f https://download.pytorch.org/whl/torch_stable.html 
+
+
+
+# fairMOT -------

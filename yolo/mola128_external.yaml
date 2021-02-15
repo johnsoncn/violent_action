@@ -6,8 +6,8 @@
 #test:  D:/external_datasets/MOLA/yoloformat/mola8/images/test/ 
 #2
 train: D:/external_datasets/MOLA/yoloformat/mola128/train.txt
-val: D:/external_datasets/MOLA/yoloformat/mola128/train.txt 
-test:  D:/external_datasets/MOLA/yoloformat/mola128/train.txt
+val: D:/external_datasets/MOLA/yoloformat/mola128/val.txt 
+test:  D:/external_datasets/MOLA/yoloformat/mola128/test.txt
 
 
 # Windows: D:/external_datasets/yoloformat/

@@ -8,9 +8,9 @@
 
 
 # train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train:  D:/external_datasets/yoloformat/coco/images/val2017/ # 118k images
-val:   D:/external_datasets/yoloformat/coco/images/val2017/  # 5k images
-test:   D:/external_datasets/yoloformat/coco/images/val2017/  # 20k images for submission to https://competitions.codalab.org/competitions/20794
+train:  D:/external_datasets/yoloformat/coco/train2017.txt # 118k images
+val:   D:/external_datasets/yoloformat/coco/val2017.txt  # 5k images
+test:   D:/external_datasets/yoloformat/coco/test-dev2017.txt # 20k images for submission to https://competitions.codalab.org/competitions/20794
 
 # Windows: D:/external_datasets/yoloformat/
 # WSL: /mnt/d/external_datasets/yoloformat/
