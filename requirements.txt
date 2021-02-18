@@ -1,4 +1,4 @@
-# WARNING: For easier installation use the "conda env create -f basic_anyOS_env.yml"
+# WARNING: For easier installation use the "conda env create -f basic_anyOS_env.yml"; check using torch: import torch torch.cuda.is_available()->if not->https://docs.nvidia.com/cuda/wsl-user-guide/index.html
 # WARNING: For installing the requirements using this script use "pip install -r requirements.txt"
 
 # base yolov5_v3.1
@@ -67,8 +67,8 @@ Pillow
 tensorboardX
 
 #SOLUTION CONDA install
-#conda install pytorch>=1.2.0 torchvision>=0.4.0 cudatoolkit=10.0 -c pytorch - go to https://pytorch.org/get-started/locally/ 
-
+#conda install pytorch=1.7.0 torchvision cudatoolkit=11 -c pytorch - go to https://pytorch.org/get-started/locally/ 
+#SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest ;-> #WARNING git clone to/Desktop 
 
 
 # FAQs
@@ -88,6 +88,7 @@ tensorboardX
 # #WARNING windows : has path problems - see below
 # #WARNING (WSL-windows subsystem for linux) : pytorch problems 
 # #WARNING WSL : gives pip errors ; #SOLUTION installing with conda 
+# #WARNING LINUX: to install cudatoolkit-> conda install pytorch torchvision cudatoolkit=10.2 -> is not necessary to follow the link https://docs.nvidia.com/cuda/wsl-user-guide/index.html
 # #WARNING WSL : CUDA LIMITATIONS ; #SOLUTION 1) update wsl to wsl 2 kernel: https://docs.microsoft.com/en-us/windows/wsl/install-win10#update-to-wsl-2  ; 2) install windows dev insider build >20150, install cuda-toolkit by following: https://docs.nvidia.com/cuda/wsl-user-guide/index.html #NOTE if ubuntu 2004, just change 1804 in paths; check using torch: import torch torch.cuda.is_available(); #NOTE Performance on GTX 1070: https://developer.nvidia.com/blog/announcing-cuda-on-windows-subsystem-for-linux-2/
 # #WARNING WSL : spyder needs GUI to work: #SOLUTION https://medium.com/@macasaetjohn/setting-up-a-spyder-environment-with-wsl-bb83716a44f3
 # #WARNING yolov5: runs are saved inside yolov5/runs/
@@ -101,3 +102,4 @@ tensorboardX
 
 
 # fairMOT -------
+# SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest
