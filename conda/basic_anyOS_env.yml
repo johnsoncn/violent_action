@@ -18,7 +18,7 @@ dependencies:
   - pytorch
   - torchvision
   - torchaudio
-  - cudatoolkit=11
+  - cudatoolkit=11.0
   - scikit-image
   - tensorboard
   - cython
@@ -33,7 +33,7 @@ dependencies:
   - tensorboardX
   - pip:
     - pycocotools>=2.0
-    - cython_bbox
+    - cython-bbox
     - motmetrics
     - yacs
 prefix: C:\Tools\miniconda3\envs\violent_action
