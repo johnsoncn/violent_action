@@ -1,3 +1,6 @@
 [submodule "yolo/yolov5"]
 	path = yolo/yolov5
 	url = https://github.com/ultralytics/yolov5.git
+[submodule "fairmot/FairMOT"]
+	path = fairmot/FairMOT
+	url = https://github.com/ifzhang/FairMOT.git
