@@ -68,7 +68,7 @@ tensorboardX
 
 #SOLUTION CONDA install
 #conda install pytorch=1.7.0 torchvision cudatoolkit=11 -c pytorch - go to https://pytorch.org/get-started/locally/ 
-#SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest ;-> #WARNING git clone to/Desktop 
+#SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest ;-> #WARNING git clone to/Desktop; #WARNING beware of the the GCC version and NVCC version, if gcc>=7, NVCC>=10 (update paths of cuda).
 
 
 # FAQs

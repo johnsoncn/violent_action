@@ -1,0 +1,43 @@
+Dataset preparation:
+Dataset
+   |——————images
+   |        └——————train
+   |        └——————val
+   └——————labels_with_ids
+   |         └——————train(empty)
+   |         └——————val(empty)
+
+Train on custom dataset:
+You can train FairMOT on custom dataset by following several steps bellow:
+
+	1.Generate one txt label file for one image. Each line of the txt label file represents one object. The format of the line is: "class id x_center/img_width y_center/img_height w/img_width h/img_height". You can modify src/gen_labels_16.py to generate label files for your custom dataset.
+	2.Generate files containing image paths. The example files are in src/data/. Some similar code can be found in src/gen_labels_crowd.py
+	3.Create a json file for your custom dataset in src/lib/cfg/. You need to specify the "root" and "train" keys in the json file. You can find some examples in src/lib/cfg/.
+	4.Add --data_cfg '../src/lib/cfg/your_dataset.json' when training.
+
+
+
+Labels: 
+src.gen_labels
+label_str = '0 {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
+                tid_curr, x / img_width, y / img_height, w / img_width, h / img_height) 
+0 is the number of the frame_id??
+tid_curr - track_id -> cada bbox tem um id unico, para o caso de uma anotação ter mais do que uma bbox.("gtboxes" - ground truth boxes?)
+use track_id or category_id???
+
+src.track.py
+save_format = '{frame},{id},{x1},{y1},{w},{h},1,-1,-1,-1\n'
+
+src.lib.datasets.dataset.jde.LoadImagesAndLabels #training
+	# Load labels
+        if os.path.isfile(label_path):
+            labels0 = np.loadtxt(label_path, dtype=np.float32).reshape(-1, 6)
+
+            # Normalized xywh to pixel xyxy format
+            labels = labels0.copy()
+            labels[:, 2] = ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
+            labels[:, 3] = ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
+            labels[:, 4] = ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
+            labels[:, 5] =f ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+        else:
+            labels = np.array([])

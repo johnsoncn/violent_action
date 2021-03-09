@@ -32,6 +32,7 @@ dependencies:
   - openpyxl
   - tensorboardX
   - pip:
+    - wandb
     - pycocotools>=2.0
     - cython-bbox
     - motmetrics
