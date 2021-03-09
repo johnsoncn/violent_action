@@ -1,3 +1,6 @@
+#NC 20022021
+UPDATE: test.py write results
+
 #JB 07122020 - yolov5_v3.1
 UPDATE: force dataloader to only load only the first time
 
