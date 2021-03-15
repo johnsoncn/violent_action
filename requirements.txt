@@ -50,7 +50,7 @@ tqdm>=4.41.0
 # jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 
-# base fairmot 2020.09.10 
+# base fairmot 2020.09.10 -> WARNING only works for one class and multi-objects
 #------------------------------- 
 yacs
 opencv-python
@@ -68,7 +68,9 @@ tensorboardX
 
 #SOLUTION CONDA install
 #conda install pytorch=1.7.0 torchvision cudatoolkit=11 -c pytorch - go to https://pytorch.org/get-started/locally/ 
-#SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest ;-> #WARNING git clone to/Desktop; #WARNING beware of the the GCC version and NVCC version, if gcc>=7, NVCC>=10 (update paths of cuda).
+#SOLUTION DCNv2: https://github.com/jinfagang/DCNv2_latest ;-> #WARNING git clone to/Desktop; #WARNING beware of the the GCC version and NVCC version, if gcc>=7, NVCC>=10 (update paths of cuda). ->https://medium.com/@brianhourigan/if-different-cuda-versions-are-shown-by-nvcc-and-nvidia-smi-its-necessarily-not-a-problem-and-311eda26856c
+
+# MCMOT 
 
 
 # FAQs
