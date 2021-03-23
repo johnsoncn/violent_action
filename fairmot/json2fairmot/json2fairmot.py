@@ -1,7 +1,6 @@
 import json
 from shutil import copyfile
 import os
-import tqdm
 import argparse
 
 import glob
