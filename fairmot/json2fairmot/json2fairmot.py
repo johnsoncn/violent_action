@@ -21,7 +21,7 @@ def make_folders(path='../out/'):
 
 
 # Convert motionLab JSON file into  labels --------------------------------
-def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, only_labels=False, img_number=None):
+def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, only_labels=False, img_number=None, track_id=None):
     '''
     #WARNING copy_images="1" #1=copy images from original datasets, easiest way to create  dataset
     # "0"= don't copy images use the ones from original #WARNING labels need to be organized
@@ -29,6 +29,8 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
 
     # Define label paths as a function of image paths
     sa, sb = os.sep + 'images' + os.sep, os.sep + 'labels' + os.sep  # /images/, /labels/ substrings
+
+    #track_id: None: using counter; str: the key of track id (e.g.: TAO is "track_id" - WARNING: MCMOT giving BUGs)
     '''
     outdir = make_folders(path=outdir)  # output directory
     jsons = glob.glob(json_dir + '*.json')
@@ -60,6 +62,9 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
         method="for"
         import time
         start=time.time()
+
+        #track id
+        tid=0
         if method=="for":
             for x in tqdm(data['annotations'], desc='Annotations %s' % json_file):
                 try:
@@ -113,11 +118,20 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                         lb_d[str(x['image_id'])].append(str(box))
                         if copy_images or only_labels:
                             with open(dir_label + img_new_fn + '.txt', 'a') as file:
-                                file.write('{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1, x['track_id'], *box)) #category_id starts with 1, track_id starts in 0
+                                if track_id: file.write('{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1, x[track_id], *box)) #category_id starts with 1, track_id starts in 0
+                                else: file.write('{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1, tid, *box))
                                 # label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(class_id, tid_curr, x / img_width, y / img_height, w / img_width, h / img_height)
                         else:
                             with open(dir_label + os.path.splitext(f)[0]+ '.txt', 'a+') as file:
-                                file.write('{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1, x['track_id'], *box))
+                                if track_id:
+                                    file.write('{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1,
+                                                                                                x[track_id],
+                                                                                                *box))  # category_id starts with 1, track_id starts in 0
+                                else:
+                                    file.write(
+                                        '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(x['category_id'] - 1, tid,
+                                                                                         *box))
+                        tid+=1
 
                 # STOP
                 if img_number and img_counter >= img_number: break
@@ -162,6 +176,9 @@ if __name__ == '__main__':
     parser.add_argument('--copy_images', type=int, default=0, help='copy images to folder /images and add new path to .txt . If 0 no image is copied and .txt has the original paths')
     parser.add_argument('--only_labels', type=int, default=0,
                         help='write labels only as if you were copying images to folder /images and add new path to .txt .')
+    parser.add_argument('--track_id', type=str,
+                        default=None,
+                        help='track id json key in annotations')
 
     opt = parser.parse_args()
 
@@ -175,11 +192,12 @@ if __name__ == '__main__':
     only_labels = False
     if opt.only_labels == 1: only_labels = True
     print('\n>>' + str(opt))
+    track_id = opt.track_id
 
     if not datasets_root_dir: raise RuntimeError('Select datasets_root_dir')
 
     if source == 'mola':
         # CREATE LABELS and IMAGES FOLDER
         convert_mola_json(datasets_root_dir=datasets_root_dir, json_dir=json_dir,
-                          outdir=outdir, img_number=img_number, copy_images=copy_images, only_labels=only_labels)
+                          outdir=outdir, img_number=img_number, copy_images=copy_images, only_labels=only_labels, track_id=track_id)
 
