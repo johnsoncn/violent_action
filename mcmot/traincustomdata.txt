@@ -1,0 +1,44 @@
+-------
+SCRIPT:
+-------
+1-Use json2mcmot.py to create dataset dir with images and labels:
+2-If already have images, use gen_mcmot_labels.py
+3-update id2cls and cls2id in gen_mcmot_labels.py. 
+4-Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
+5-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
+6-Set cls ids for training in opts.py i.e.
+
+#train custom dataset: follow visdrone dataset training example: https://github.com/CaptainEven/MCMOT
+
+-------
+DETAILED:
+-------
+Dataset preparation:
+Dataset
+   |——————images
+   |        └——————train
+   |        └——————val
+   └——————labels_with_ids
+   |         └——————train(empty)
+   |         └——————val(empty)
+
+Train on custom dataset:
+You can train MCMOT on custom dataset by following several steps bellow:
+
+	1.Generate one txt label file for one image. Each line of the txt label file represents one object. The format of the line is: "class id x_center/img_width y_center/img_height w/img_width h/img_height". You can modify src/gen_labels_16.py to generate label files for your custom dataset.
+	2.Generate files containing image paths. The example files are in src/data/. Some similar code can be found in src/gen_labels_crowd.py
+	3.Create a json file for your custom dataset in src/lib/cfg/. You need to specify the "root" and "train" keys in the json file. You can find some examples in src/lib/cfg/.
+	4.Add --data_cfg '../src/lib/cfg/your_dataset.json' when training.
+	5-update id2cls and cls2id in gen_custom_labels.py. 
+	6-Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
+	7-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
+	8-Set cls ids for training in opts.py i.e.
+
+
+Labels: 
+src.gen_labels
+label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
+                class_id, track_id, x / img_width, y / img_height, w / img_width, h / img_height) 
+
+track_id: if dataset has track_id key in annotations, you can use it, if not, each bbox will have a different id
+
