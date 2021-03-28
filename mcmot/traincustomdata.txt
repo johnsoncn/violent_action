@@ -1,26 +1,18 @@
 -------
-SCRIPT:
+TRAIN CUSTOM DATA @NC UPDATE:
 -------
-1-Use json2mcmot.py to create dataset dir with images and labels:
-2-If already have images, use gen_mcmot_labels.py
-3-update id2cls and cls2id in gen_mcmot_labels.py. 
-4-Call the gen_dot_train_file function in gen_mcmot_labels.py to generate the dot train file for mcmot training task.
-5-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
-6-Set cls ids for training tracking: 
-	opts.py:
- 		default_dataset_info = {
-            		'mot': {'default_input_wh': [opt.input_wh[1], opt.input_wh[0]],  # [608, 1088], [320, 640]
-                    		'num_classes': len(opt.reid_cls_ids.split(',')),  # 1
-                    		'mean': [0.408, 0.447, 0.470],
+1-Use json2mcmot.py to create dataset dir with images and labels;
+2-If already have images exported, use gen_mcmot_labels.py to gen labels (#WARNING choose wisely how to add track id, see detailed information below);
+3-update id2cls.txt and cls2id.txt using gen_cls_id.py (#WARNING UPDATE to your custom dataset);
+4-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping: 
+	4.1-add gen_mcmot_labels.py, id2cls.txt and cls2id.txt to mcmot.src folder 
+	4.2-add multitracker.py patch in mcmot.src.lib.tracker
+6-Set cls ids for training tracking in opts.py: 
+	6.1-add opts.py patch to mcmot.src.lib
+		6.1.1-opt.task and opt.batch_size updated to be like fairmot
+		6.1.2-opt.reid_cls_ids updated to use has default the keys from id2cls.txt (#NOTE can still be changed by passing the parameter --reid_cls_ids);
 
-                    		'std': [0.289, 0.274, 0.278],
-                    		'dataset': 'jde',
-                    		'nID': 14455,
-                    		'nID_dict': {}},
-       		}
-		--reid_cls_ids=previous+','+str(k) for k in id2cls (using as default id2cls.txt) - if not is not working
 
-#train custom dataset: follow visdrone dataset training example: https://github.com/CaptainEven/MCMOT
 
 -------
 DETAILED:
@@ -35,14 +27,14 @@ Dataset
    |         └——————val(empty)
 
 Train on custom dataset:
-You can train MCMOT on custom dataset by following several steps bellow:
+You can train MCMOT on custom dataset by following several steps bellow (following fairmot and mcmot visdrone dataset training example: https://github.com/CaptainEven/MCMOT):
 
 	1.Generate one txt label file for one image. Each line of the txt label file represents one object. The format of the line is: "class id x_center/img_width y_center/img_height w/img_width h/img_height". You can modify src/gen_labels_16.py to generate label files for your custom dataset.
 	2.Generate files containing image paths. The example files are in src/data/. Some similar code can be found in src/gen_labels_crowd.py
 	3.Create a json file for your custom dataset in src/lib/cfg/. You need to specify the "root" and "train" keys in the json file. You can find some examples in src/lib/cfg/.
 	4.Add --data_cfg '../src/lib/cfg/your_dataset.json' when training.
 	5-create and add to mcmot.src gen_custom_labels.py (e.g. gen_dataset_visdrone). Then, update id2cls and cls2id in gen_custom_labels.py. 
-	6-Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
+	6-(TODO: json2mcmot already does this train.txt)Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
 	7-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
 	8-Set cls ids for training tracking in opts.py: follow visdrone dataset training example: https://github.com/CaptainEven/MCMOT
 		For custom dataset training, just modify the configuration in opts.py, my is:
@@ -58,7 +50,7 @@ src.gen_labels
 label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
                 class_id, track_id, x / img_width, y / img_height, w / img_width, h / img_height) 
 
-class_id(starts from 0), track_id(starts from 1), bbox_center_x, bbox_center_y, bbox_width, bbox_height
+	  = class_id(starts from 0), track_id(starts from 1), bbox_center_x, bbox_center_y, bbox_width, bbox_height
 
-track_id: if dataset has track_id key in annotations, you can use it, if not, each bbox will have a different id
+track_id: if dataset has track_id key in annotations, you can use it, if not, the default in json2mcmot and gen_mcmot_labels is to have each bbox will have a different id.
 
