@@ -4,9 +4,21 @@ SCRIPT:
 1-Use json2mcmot.py to create dataset dir with images and labels:
 2-If already have images, use gen_mcmot_labels.py
 3-update id2cls and cls2id in gen_mcmot_labels.py. 
-4-Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
+4-Call the gen_dot_train_file function in gen_mcmot_labels.py to generate the dot train file for mcmot training task.
 5-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
-6-Set cls ids for training in opts.py i.e.
+6-Set cls ids for training tracking: 
+	opts.py:
+ 		default_dataset_info = {
+            		'mot': {'default_input_wh': [opt.input_wh[1], opt.input_wh[0]],  # [608, 1088], [320, 640]
+                    		'num_classes': len(opt.reid_cls_ids.split(',')),  # 1
+                    		'mean': [0.408, 0.447, 0.470],
+
+                    		'std': [0.289, 0.274, 0.278],
+                    		'dataset': 'jde',
+                    		'nID': 14455,
+                    		'nID_dict': {}},
+       		}
+		--reid_cls_ids=previous+','+str(k) for k in id2cls (using as default id2cls.txt) - if not is not working
 
 #train custom dataset: follow visdrone dataset training example: https://github.com/CaptainEven/MCMOT
 
@@ -29,16 +41,24 @@ You can train MCMOT on custom dataset by following several steps bellow:
 	2.Generate files containing image paths. The example files are in src/data/. Some similar code can be found in src/gen_labels_crowd.py
 	3.Create a json file for your custom dataset in src/lib/cfg/. You need to specify the "root" and "train" keys in the json file. You can find some examples in src/lib/cfg/.
 	4.Add --data_cfg '../src/lib/cfg/your_dataset.json' when training.
-	5-update id2cls and cls2id in gen_custom_labels.py. 
+	5-create and add to mcmot.src gen_custom_labels.py (e.g. gen_dataset_visdrone). Then, update id2cls and cls2id in gen_custom_labels.py. 
 	6-Call the gen_dot_train_file function in gen_custom_labels.py to generate the dot train file for mcmot training task.
 	7-Add the correct cls2id and id2cls in multitracker.py to use the correct class names and class Ids mapping.
-	8-Set cls ids for training in opts.py i.e.
+	8-Set cls ids for training tracking in opts.py: follow visdrone dataset training example: https://github.com/CaptainEven/MCMOT
+		For custom dataset training, just modify the configuration in opts.py, my is:
+		self.parser.add_argument('--reid_cls_ids',
+					default='0,1,2,3,4', # car, bicycle, person, cyclist, tricycle
+					help='') # the object classes need to do reid
+		If you have 6 object classes and only need 3 object classes to do tracking(detection+reid) and the other 3 		classes only do detections, it's ok to set reid_cls_ids less than 6.
+		If you only want to do detection, just make track_id to 0 will be ok.
 
 
 Labels: 
 src.gen_labels
 label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
                 class_id, track_id, x / img_width, y / img_height, w / img_width, h / img_height) 
+
+class_id(starts from 0), track_id(starts from 1), bbox_center_x, bbox_center_y, bbox_width, bbox_height
 
 track_id: if dataset has track_id key in annotations, you can use it, if not, each bbox will have a different id
 
