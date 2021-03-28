@@ -11,6 +11,8 @@ TRAIN CUSTOM DATA @NC UPDATE:
 	6.1-add opts.py patch to mcmot.src.lib
 		6.1.1-opt.task and opt.batch_size updated to be like fairmot
 		6.1.2-opt.reid_cls_ids updated to use has default the keys from id2cls.txt (#NOTE can still be changed by passing the parameter --reid_cls_ids);
+7-Add train.py patch to mcmot.src to behave like fairmot in the opt.device.
+8-Use a batch or shebang file similar to the ones in TESTS folder.
 
 
 
