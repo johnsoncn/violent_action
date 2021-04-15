@@ -4,3 +4,6 @@
 [submodule "fairmot/FairMOT"]
 	path = fairmot/FairMOT
 	url = https://github.com/ifzhang/FairMOT.git
+[submodule "yolomot/YOLOV4_MCMOT"]
+	path = yolomot/YOLOV4_MCMOT
+	url = https://github.com/CaptainEven/YOLOV4_MCMOT.git
