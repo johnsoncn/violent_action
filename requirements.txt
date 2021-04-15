@@ -75,7 +75,13 @@ tensorboardX
 #same dependencies as fairmot
 
 
+<<<<<<< HEAD
+# NORFAIR -> Multiclass? and multi-object tracking? customizable lightweight Python library for real-time 2D object tracking.
+# ---------------
+norfair[metrics,video] #everything included
+=======
 
+>>>>>>> 97ad1b8d22a961911f7d0f7ed5fa86ea0a957b9f
 
 # FAQs
 #-------------

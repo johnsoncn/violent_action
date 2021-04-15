@@ -20,7 +20,11 @@ dependencies:
   - torchaudio
   - cudatoolkit=11.0
   - scikit-image
+<<<<<<< HEAD
+  - tensorboard>=2.4.1
+=======
   - tensorboard
+>>>>>>> 97ad1b8d22a961911f7d0f7ed5fa86ea0a957b9f
   - cython
   - jupyterlab
   - pandas
@@ -31,10 +35,18 @@ dependencies:
   - lap
   - openpyxl
   - tensorboardX
+<<<<<<< HEAD
+  - seaborn>=0.11.0
+=======
+>>>>>>> 97ad1b8d22a961911f7d0f7ed5fa86ea0a957b9f
   - pip:
     - wandb
     - pycocotools>=2.0
     - cython-bbox
     - motmetrics
     - yacs
+<<<<<<< HEAD
+    - norfair[metrics,video]
+=======
+>>>>>>> 97ad1b8d22a961911f7d0f7ed5fa86ea0a957b9f
 prefix: C:\Tools\miniconda3\envs\violent_action
