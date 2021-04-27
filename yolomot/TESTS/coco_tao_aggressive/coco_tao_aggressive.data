@@ -1,4 +1,0 @@
-classes=76
-train=/home/administrator/Desktop/DATASET/splitann_mola_fix_equal_reorder_cleanclass_cleanimg/mix_coco_and_tao_aggressive/train_linux.txt
-valid=/home/administrator/Desktop/DATASET/splitann_mola_fix_equal_reorder_cleanclass_cleanimg/mix_coco_and_tao_aggressive/val_linux.txt
-names=/home/administrator/Desktop/DATASETS/yolomot/coco_tao_aggressive.names

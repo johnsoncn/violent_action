@@ -7,3 +7,6 @@
 [submodule "yolomot/YOLOV4_MCMOT"]
 	path = yolomot/YOLOV4_MCMOT
 	url = https://github.com/CaptainEven/YOLOV4_MCMOT.git
+[submodule "yolomot/YOLO_MCMOT/YOLOV4_MCMOT"]
+	path = yolomot/YOLO_MCMOT/YOLOV4_MCMOT
+	url = https://github.com/CaptainEven/YOLOV4_MCMOT.git
