@@ -1,4 +1,9 @@
 .ipynb_checkpoints
 *.pyc
+*.pt
+*.pth
 .DS_Store
 /yolo/yolo.egg-info
+fairmot/FairMOT
+yolo/old
+yolo/yolov5
