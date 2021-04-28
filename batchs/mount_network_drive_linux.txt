@@ -1,0 +1,32 @@
+sudo bash
+
+Code:
+
+nano /root/.servercred
+
+Put
+
+Code:
+
+username=DOMAIN\username
+password=password
+
+CTRL + X then Y to save
+
+Code:
+
+nano /etc/fstab
+
+paste this
+
+Code:
+
+//IP*OF*SERVER/SHARE /mount*location cifs sec=ntlmv2,credentials=/root/.servercred,iocharset=utf8,file_mode=0777,dir_mode=0777 0
+
+CTRL + X then Y to save
+
+Code:
+
+mount -a
+
+
