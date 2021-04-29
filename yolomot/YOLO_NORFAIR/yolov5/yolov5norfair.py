@@ -29,7 +29,7 @@ class YOLO:
         if self.use_cuda:
             self.model.cuda()
 
-    def __call__(self, img, conf=0.4, iou=0.6):
+    def __call__(self, img, conf=0.4, iou=0.6, classes_model=None):
         """
         #METHOD 1 - resizing image, normalize and do_detect from tool.torch_utils import do_detect
         #NOT working - output = self.model(img) is fifferent and is difficult to extract the boxes
@@ -55,6 +55,7 @@ class YOLO:
         # CHANGE MODEL PARAMETERS:
         self.model.conf = conf
         self.model.iou = iou
+        self.model.classes = classes_model
         # INFERENCE:
         output = self.model(img)  # includes nms for each class; 
         #output = self.model(img, size=416) #resize is possible but the Boxes need to be converted back-how??
@@ -94,9 +95,12 @@ if __name__ == '__main__':
     parser.add_argument("--files", type=str, nargs="+", help="Video files to process")
     parser.add_argument("--conf", type=float, default="0.4",help="confidence threshold")
     parser.add_argument("--iou_thres", type=float, default="0.6",help="iou threshold")
-    parser.add_argument("--debug",  action='store_true', default="0.6",help="iou threshold")
+    parser.add_argument("--classes_model", type=int, nargs='+', default=None,help="list of classes for inference")
+    parser.add_argument("--classes_track", type=int, nargs='+', default=None,help="list of classes to present in the video")
+    parser.add_argument("--debug",  action='store_true',help="debug text")
     args = parser.parse_args()
-    
+    print(args)
+
     model = YOLO(args.weights)  # set use_cuda=False if using CPU
     
     max_distance_between_points = 30
@@ -109,15 +113,15 @@ if __name__ == '__main__':
         #tracker_c1 = Tracker(distance_function=euclidean_distance, distance_threshold=max_distance_between_points)
     
         for frame in video:
-            detections = model(frame, conf=args.conf, iou=args.iou_thres) #__call__ method
+            detections = model(frame, conf=args.conf, iou=args.iou_thres, classes_model=args.classes_model) #__call__ method
             detections = [
                 Detection(get_centroid(box, frame.shape[0], frame.shape[1]), data=box)
                 for box in detections
-                #if box[-1] == 2 #select the classes you want to track
+                if not args.classes_track or box[-1] in args.classes_track #select the classes you want to track
             ]
             tracked_objects = tracker.update(detections=detections)
-            norfair.draw_points(frame, detections)
-            norfair.draw_tracked_objects(frame, tracked_objects)
+            norfair.draw_points(frame, detections, radius=10, thickness=5, color=norfair.Color.green)
+            norfair.draw_tracked_objects(frame, tracked_objects, id_size=5, id_thickness=10, color=norfair.Color.green)
             if (args.debug): norfair.draw_debug_metrics(frame, tracked_objects) #debug (optional)
             
             #detections_c1 = [Detection(get_centroid(box, frame.shape[0], frame.shape[1]), data=box) for box in detections if box[-1] == 1]
