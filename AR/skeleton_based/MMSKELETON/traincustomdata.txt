@@ -1,0 +1,13 @@
+-------
+TRAIN CUSTOM DATA @NC UPDATE:
+-------
+1.Custom Environment: Needs to be the one on github page, recent does not work because of mmcv==0.4.3. Pycocotools==1.0 or the new verstion 2.0.2 but you need to patch mmskeleton.utils.third_party.py and mmskeleton.datasets.coco.py.
+
+
+
+-------
+DETAILED:
+-------
+Dataset preparation:
+
+

@@ -1,5 +1,10 @@
-# WARNING: For easier installation use the "conda env create -f basic_anyOS_env.yml"; check using torch: import torch torch.cuda.is_available()->if not->https://docs.nvidia.com/cuda/wsl-user-guide/index.html
-# WARNING: For installing the requirements using this script use "pip install -r requirements.txt"
+# WARNING: For easier installation use: 1) the "conda env create -f basic_anyOS_env.yml" and your good to go; 2) check using torch: import torch torch.cuda.is_available()->if not->https://docs.nvidia.com/cuda/wsl-user-guide/index.html
+# WARNING: If problems arise, for installing the requirements using this script use "pip install -r requirements.txt"
+
+#---------------------
+# MCMOD - Detection
+#---------------------
+
 
 # base yolov5_v3.1
 #------------------------------- 
@@ -50,6 +55,10 @@ tqdm>=4.41.0
 # jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 
+#-------------------------
+# MCMOT - tracking
+#--------------------------
+
 # base fairmot 2020.09.10 -> WARNING only works for one class and multi-objects
 #------------------------------- 
 yacs
@@ -75,16 +84,48 @@ tensorboardX
 #same dependencies as fairmot
 
 
-<<<<<<< HEAD
+
 # NORFAIR -> Multiclass? and multi-object tracking? customizable lightweight Python library for real-time 2D object tracking.
 # ---------------
 norfair[metrics,video] #everything included
-=======
 
->>>>>>> 97ad1b8d22a961911f7d0f7ed5fa86ea0a957b9f
 
+#-------------------------
+# AR - Action recognition
+#--------------------------
+
+#mmskeleton - v0.7rc1
+#-------------------------------
+#similar to fairmot requirements
+
+#d. Install mmskeleton:
+#run python setup.py develop
+
+#e. Install nms for person estimation:
+#cd mmskeleton/ops/nms/
+#python setup_linux.py develop
+#cd ../../../
+
+#f. [Optional] Install mmdetection for person detection:
+
+#python setup.py develop --mmdet
+
+#In the event of a failure installation, please install mmdetection manually.
+
+#g. To verify that mmskeleton and mmdetection installed correctly, use:
+
+#python mmskl.py pose_demo [--gpus $GPUS]
+# or "python mmskl.py pose_demo_HD [--gpus $GPUS]" for a higher accuracy
+
+
+
+
+
+
+
+#-------------------------
 # FAQs
-#-------------
+#-------------------------
 
 # YOLOv5 -------
 
