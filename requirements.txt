@@ -94,7 +94,33 @@ norfair[metrics,video] #everything included
 # AR - Action recognition
 #--------------------------
 
-#mmskeleton - v0.7rc1
+#mmaction2 - v0.14.0 - https://github.com/open-mmlab/mmaction2/blob/master/docs/install.md
+#-------------------------------
+#from scractch 
+
+#conda create -n mmaction2 python=3.7 -y
+#conda activate mmaction2
+
+# install latest pytorch prebuilt with the default prebuilt CUDA version (usually the latest)
+#conda install -c pytorch pytorch torchvision -y
+
+# install the latest mmcv or mmcv-full, here we take mmcv as example
+#pip install mmcv
+
+# install mmaction2
+#git clone https://github.com/open-mmlab/mmaction2.git
+#cd mmaction2
+#pip install -r requirements/build.txt
+#pip install -r requirements/optional.txt
+#see moviepy installation -> https://github.com/open-mmlab/mmaction2/blob/master/docs/install.md
+#python setup.py develop
+
+#mkdir data
+#ln -s $KINETICS400_ROOT data #create symbolic link of your root folder
+
+
+
+#mmskeleton - v0.7rc1 - 
 #-------------------------------
 #similar to fairmot requirements
 
