@@ -1,0 +1,4 @@
+(epoch, epochs - 1), mem, *mloss, targets.shape[0], imgs.shape[-1], mp, mr, map50, map, *(loss.cpu() / len(dataloader)).tolist()
+[0,1,*[2,3,4,5],6,7,8,9,10,11,*[12,13,14]]
+[2, 3, 4, 8, 9, 12, 13, 14, 10, 11]
+['Box' (mloss), 'Objectness' mloss, 'Classification' mloss, 'Precision' (mp), 'Recall' (mr),'val Box', 'val Objectness', 'val Classification', 'mAP@0.5' (map50), 'mAP@0.5:0.95' (map)]
