@@ -102,10 +102,10 @@ norfair[metrics,video] #everything included
 #conda activate mmaction2
 
 # install latest pytorch prebuilt with the default prebuilt CUDA version (usually the latest)
-#conda install -c pytorch pytorch torchvision -y
+#conda install pytorch torchvision cudatoolkit=10.2 -c pytorch #conda install -c pytorch pytorch torchvision -y
 
 # install the latest mmcv or mmcv-full, here we take mmcv as example
-#pip install mmcv
+#pip install mmcv-full #mmdet windows install compiler vc++ 
 
 # install mmaction2
 #git clone https://github.com/open-mmlab/mmaction2.git
@@ -113,6 +113,12 @@ norfair[metrics,video] #everything included
 #pip install -r requirements/build.txt
 #pip install -r requirements/optional.txt
 #see moviepy installation -> https://github.com/open-mmlab/mmaction2/blob/master/docs/install.md
+#python setup.py develop
+
+# install mmdet
+#git clone https://github.com/open-mmlab/mmdetection.git
+#cd mmdetection
+#pip install -r requirements/build.txt
 #python setup.py develop
 
 #mkdir data
