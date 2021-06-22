@@ -7,8 +7,9 @@
 --det-score-thr 0.9 ^
 --action-score-thr 0.5 ^
 --label-map C:/Users/nmc_costa/Desktop/mmaction2/demo/label_map_ava.txt ^
---predict-stepsize 40 ^
---output-fps 20 ^
+--predict-stepsize 60 ^
+--output-fps 30 ^
+--clip-vis-length 8 ^
 --show
 
 
