@@ -29,13 +29,13 @@ def init_json(file='mola.json'):
         "tracks": [],
         "segment_info": [],
         "annotations": [],
-        "datasets": [{'name': 'COCO', 'id': 1}, {'name': 'TAO', 'id': 2}]
+        "datasets": [] #[{'name': 'COCO', 'id': 1}, {'name': 'TAO', 'id': 2}]
     }
     output['info'] = {
-        "description": "Mixed Dataset",
+        "description": "MOLA Dataset",
         "url": "",
         "version": "1",
-        "year": 2020,
+        "year": 2021,
         "date_created": datetime.datetime.utcnow().isoformat(' ')
     }
 
