@@ -152,7 +152,7 @@ def fix_pahts(gt):
     gt['gTruth']['DataSource']=paths
     return gt
 
-def import_categories(molajson, gt):
+def import_categories(molajson, gt, start_id=0):
     # IMPORT categories name and id
     cat_l=[]
     cat_l_id=[]
@@ -160,7 +160,7 @@ def import_categories(molajson, gt):
     cat=gt['gTruth']['LabelDefinitions']
     for i,c in enumerate(tqdm(cat)):
         cat_l.append(c['Name'])
-        cat_l_id.append(i+1) # id start from 1
+        cat_l_id.append(start_id+i+1) # id start from 1
         cat_l_dset.append(1) # dataset index
         molajson['categories'].append({'name':cat_l[i],'id':cat_l_id[i],'dataset':cat_l_dset[i]})
     # ADDITIONAL CATEGORIES: MANUAL
@@ -171,25 +171,25 @@ def import_categories(molajson, gt):
     cat_l.append(name)
     cat_l_id.append(cid)
     cat_l_dset.append(dset)
-    print("\n>> categories:\n", molajson['categories'][:2])
+    print("\n>> categories:\n", molajson['categories'][-2:])
     return molajson, cat_l, cat_l_id, cat_l_dset
 
-def import_images(molajson, gt):
+def import_images(molajson, gt, start_id=0):
     # images filepath and id
     img_l=[]
     img_l_id=[]
     img=gt['gTruth']['DataSource']
     for i,im in enumerate(tqdm(img)):
         img_l.append(im)
-        img_l_id.append(i+1) # id start from 1
+        img_l_id.append(start_id+i+1) # id start from 1
         molajson['images'].append({'file_name':img_l[i],
                                    'id':img_l_id[i],
                                    'caption':img_l[i].split('\\')[-4], # scenario
                                    'dataset':1})
-    print("\n>> images:\n", molajson['images'][:2])
+    print("\n>> images:\n", molajson['images'][-2:])
     return molajson, img_l, img_l_id
 
-def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id):
+def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id, start_id=0):
     # annotations category_id, image_id, bbox, and dataset
     ann_id=[]
     ann_catid=[]
@@ -198,7 +198,7 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id)
     ann_dset=[]
     labels=gt['gTruth']['LabelData']
     for i,l in enumerate(tqdm(labels)):
-        annid=i+1
+        annid=start_id+i+1
         catidx=cat_l.index("VIOLENT")
         if not l["VIOLENT"]: catidx=cat_l.index("NONVIOLENT")
         catid=cat_l_id[catidx]
@@ -219,7 +219,7 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id)
                                         'area': area,
                                         'iscrowd': 0,
                                         'dataset':dataset})
-    print("\n>> annotations:\n", molajson['annotations'][:2])
+    print("\n>> annotations:\n", molajson['annotations'][-2:])
     return molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset
     
 if __name__ == '__main__':

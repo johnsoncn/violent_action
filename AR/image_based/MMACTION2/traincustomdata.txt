@@ -1,12 +1,132 @@
 -------
 TRAIN CUSTOM DATA @NC UPDATE:
 -------
-TODO
 
+1. Prepare dataset (See examples below)
+
+2. Generate filelist
+
+3. Configure mmaction2 to receive custom dataset
+
+
+
+------
+Data preparation
+------
+0. $MMACTION2="path/to/mmaction2" ; $DATASET="MOL"
+	0.1 "mkdir ${MMACTION2}/data/${DATASET}"
+
+1. prepare videos or rawframes:
+	Note that the videos should be arranged in either(see data format examples below):
+	(1). A two-level directory organized by ${CLASS_NAME}/${VIDEO_ID}, which is recommended to be used for for action recognition datasets (such as UCF101 and Kinetics)
+	(2). A single-level directory ${VIDEO_ID}, which is recommended to be used for for action detection datasets or those with multiple annotations per video
+	
+
+2. Extract frames if video: 
+	1 Extract FRAMES and OPTICAL FLOW using denseflow: python build_rawframes.py ${SRC_FOLDER} ${OUT_FOLDER}
+	2 Alternative to denseflow(Note that the speed of the script is much slower than denseflow, since it runs optical flow algorithms on CPU.): python tools/misc/flow_extraction.py
+
+3. Organize dataset in "mkdir ${MMACTION2}/data/${DATASET}": 
+	1 NOT RECOMMENDED: directly copy rawframes or videos to directory
+	2 RECOMMENDED practice (symlink in server doesn't work):
+	2.1 set "mkdir $OUT_FOLDER" to be a folder located in SSD.
+	2.2 symlink the link $OUT_FOLDER to $MMACTION2/data/$DATASET/rawframes: ln -s ${OUT_FOLDER} ${MMACTION2}/data/${DATASET}/rawframes
+
+4. Generate annotation filelist (txt filelist see 6., json2mmaction2.py) 
+	- rawframe annotation file list: json to txt [ frame_directory total_frames label  ] or [ frame_directory start_frame total_frames label  ]
+	- video annotation file list: json to txt [fielpath label]
+	- json annotation: anno_txt2json.py [{frame_dir: , total_frames: int label: []}]
+	1 use json2mmaction2.sh that  already does all the steps before
+	2 use json2filelist.py to generate the filelist from json annotations 
+	3 use mmaction2 python tools/data/build_file_list.py ${DATASET} ${SRC_FOLDER} to generate the filelist from rawframes or videos folder
+
+
+5. Prepare audio (optional):
+	1 python tools/data/extract_audio.py ${ROOT} ${DST_ROOT}
+	2 extract features python tools/data/build_audio_features.py ${AUDIO_HOME_PATH} ${SPECTROGRAM_SAVE_PATH}
+
+------
+6. Configure custom dataset to mmaction2 train pipeline 
+------
+	1 Reorganize datasets to existing filelist format (go back to 4. )
+		1 rawframe annotation file list: json to txt [ frame_directory total_frames label  ] or [ frame_directory start_frame total_frames label  ]
+		2 video annotation file list: json to txt [fielpath label]
+		3 ActivityNet video annotation: see https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
+	2 Example of using a custom dataset in rawframe format:
+		Add configs/task/method/my_custom_config.py: 
+			task="recognition"
+			method="tsn" (model)
+			my_custom_config=see customconfig.py (go see examples in configs)
+		see https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
+Example of config dirs:
+root="data/" #default: "data/"
+dataset="mola"
+# dataset settings
+dataset_type = 'RawframeDataset'
+data_root = root+dataset+'/rawframes'
+data_root_val = root+dataset+'/rawframes'
+ann_file_train = root+dataset+'/'+dataset+'_train_list_rawframes.txt'
+ann_file_val = root+dataset+'/'+dataset+'_val_list_rawframes.txt'
+ann_file_test = root+dataset+'/'+dataset+'_val_list_rawframes.txt'
 
 
 -------
 DETAILED:
 -------
-Dataset preparation:
+Dataset preparation: https://mmaction2.readthedocs.io/en/latest/data_preparation.html
+https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
 
+Exemplo 1 data structure:
+
+mmaction2
+├── mmaction
+├── tools
+├── configs
+├── data
+│   ├── mola
+│   │   ├── videos
+│   │   │    ├── VIOLENT 
+│   │   │    │    ├──video_id.mp4 (filepath=VIOLENT/video_id.mp4)
+│   │   │    ├── NONVIOLENT
+│   │   ├── rawframes
+│   │   │    ├── VIOLENT
+│   │   │    │    ├──video_id (frame_dir=VIOLENT/video_id)
+│   │   │    │    │   ├──img_imgid.jpg (imgid with 4 zero padding)
+│   │   │    │    │   ├──...
+│   │   │    │    │   ├──flow_x_imgid.jpg
+│   │   │    │    │   ├──flow_y_imgid.jpg
+│   │   │    ├── NONVIOLENT
+│   │   ├── mola_train_list_rawframes.txt
+│   │   ├── mola_val_list_rawframes.txt
+│   │   ├── mola_train_list_videos.txt
+│   │   ├── mola_val_list_videos.txt
+
+Exemplo 2:
+
+mmaction2
+├── mmaction
+├── tools
+├── configs
+├── data
+│   ├── mola
+│   │   ├── videos_train
+│   │   │    ├── VIOLENT
+│   │   │    │    ├──video_id.mp4
+│   │   │    ├── NONVIOLENT
+│   │   ├── videos_val
+│   │   ├── rawframes_train
+│   │   │    ├── VIOLENT
+│   │   │    │    ├──video_id
+│   │   │    │    │   ├──img_imgid.jpg (imgid with 4 zero padding)
+│   │   │    │    │   ├──...
+│   │   │    │    │   ├──flow_x_imgid.jpg
+│   │   │    │    │   ├──flow_y_imgid.jpg
+│   │   │    ├── NONVIOLENT
+│   │   ├── rawframes_val
+│   │   ├── mola_train_list_rawframes.txt
+│   │   ├── mola_val_list_rawframes.txt
+│   │   ├── mola_train_list_videos.txt
+│   │   ├── mola_val_list_videos.txt
+
+
+Exemplo 1 data structure:
