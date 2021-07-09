@@ -113,6 +113,8 @@ import json
 import os
 from tqdm import tqdm
 import argparse
+import datetime
+
 
 # ## Functions
 def init_json(file='mola.json'):
