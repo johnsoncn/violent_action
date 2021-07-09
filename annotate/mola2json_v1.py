@@ -235,40 +235,53 @@ if __name__ == '__main__':
         'pointcloud': [640,576]
     }
 
-    #INIT JSON
-    molafile=rdir+'INCAR/'+'mola.json'
+    # INIT JSON
+    molafile = rdir + 'INCAR/' + 'mola.json'
     init_json(file=molafile)
-    molajson =  json.load(open(molafile))
-    molajson['datasets']=[{'name': 'INCAR', 'id': 1}]
+    molajson = json.load(open(molafile))
+    molajson['datasets'] = [{'name': 'INCAR', 'id': 1}]
     with open(molafile, 'w') as f:
         json.dump(molajson, f)
-    rootdir="D:/external_datasets/MOLA/INCAR/"
-    #FOR LOOP
-    days=os.listdir(rootdir)
-    imported_cats=False
+    rootdir = "D:/external_datasets/MOLA/INCAR/"
+    # FOR LOOP
+    days = os.listdir(rootdir)
+    imported_cats = False
+    cat_start_id = 0
+    img_start_id = 0
+    ann_start_id = 0
+    cat_l, cat_l_id, cat_l_dset = [], [], []
+    img_l, img_l_id = [], []
+    ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = [], [], [], [], []
     for day in days:
-        sessiondir=os.path.join(rootdir, day)
-        if not os.path.isdir(sessiondir): continue #test if is a folder
-        sessions=os.listdir(sessiondir)
+        sessiondir = os.path.join(rootdir, day)
+        if not os.path.isdir(sessiondir): continue  # test if is a folder
+        sessions = os.listdir(sessiondir)
         for session in sessions:
-            scenariosdir=os.path.join(sessiondir, session)
-            if not os.path.isdir(scenariosdir): continue #test if is a folder
-            scenarios=os.listdir(scenariosdir)
+            scenariosdir = os.path.join(sessiondir, session)
+            if not os.path.isdir(scenariosdir): continue  # test if is a folder
+            scenarios = os.listdir(scenariosdir)
             for scenario in scenarios:
-                imgdir=os.path.join(scenariosdir, scenario)
-                if not os.path.isdir(imgdir): continue #test if is a folder
-                labeldir=os.path.join(imgdir,'gt') 
-                #if not os.path.isdir(labeldir): continue #should exist
-                filename=os.path.join(labeldir, "gt.json")
-                gt=json.load(open(filename))
-                #fix gt paths
-                gt=fix_pahts(gt)
-                #update molajson
-                if not imported_cats: #only imports one time
-                    molajson, cat_l, cat_l_id, cat_l_dset=import_categories(molajson, gt)
-                    imported_cats=True
-                molajson, img_l, img_l_id=import_images(molajson, gt)
-                molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset=create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id)
+                imgdir = os.path.join(scenariosdir, scenario)
+                if not os.path.isdir(imgdir): continue  # test if is a folder
+                labeldir = os.path.join(imgdir, 'gt')
+                # if not os.path.isdir(labeldir): continue #should exist
+                filename = os.path.join(labeldir, "gt.json")
+                gt = json.load(open(filename))
+                # fix gt paths
+                gt = fix_pahts(gt)
+                # update molajson
+                if not imported_cats:  # only imports one time
+                    molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt, start_id=cat_start_id)
+                    imported_cats = True
+                molajson, img_l, img_l_id = import_images(molajson, gt, start_id=img_start_id)
+                molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = create_annotations(molajson, gt, res,
+                                                                                                cat_l, cat_l_id,
+                                                                                                cat_l_dset, img_l_id,
+                                                                                                start_id=ann_start_id)
+                # update start ids to the last id
+                cat_start_id = cat_l_id[-1]
+                img_start_id = img_l_id[-1]
+                ann_start_id = ann_id[-1]
 
     # results
     for k in molajson:

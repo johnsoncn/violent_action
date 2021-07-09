@@ -5,10 +5,10 @@ _base_ = [
     baseroot+'_base_/models/tsn_r50.py', baseroot+'_base_/schedules/sgd_100e.py',
     baseroot+'_base_/default_runtime.py'
 ]
-root="data/" #default: "data/"
-dataset="mola"
 
 # dataset settings
+root="data/" #default: "data/"
+dataset="mola"
 dataset_type = 'RawframeDataset'
 data_root = root+dataset+'/rawframes'
 data_root_val = root+dataset+'/rawframes'
