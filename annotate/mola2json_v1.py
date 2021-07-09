@@ -112,6 +112,7 @@ import platform
 import json
 import os
 from tqdm import tqdm
+import argparse
 
 # ## Functions
 def init_json(file='mola.json'):
@@ -223,11 +224,18 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id,
     return molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset
     
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', type=str, default='D:/external_datasets/MOLA/', help='root dir of datasets')
+    parser.add_argument('--datasets', nargs='+', default=['INCAR'], help='list of datasets')
+    args = parser.parse_args()
+    root=args.root
+    datasets=args.datasets
+
     #Define root dir dependent on OS
-    rdir='D:/external_datasets/MOLA/' #WARNING needs to be root datasets 
+    rdir=root #WARNING needs to be root datasets
     print('OS: {}'.format(platform.platform()))
-    if str(platform.platform()).upper().find('linux'.upper())>-1: rdir='/home/administrator/Z/Datasets/External Datasets/MOLA/' #'/mnt/d/external_datasets/'
     print('root dir: {}'.format(rdir))
+
     # define resolutions
     res={
         'rgb': [2048, 1536], #w,h
@@ -236,52 +244,58 @@ if __name__ == '__main__':
     }
 
     # INIT JSON
-    molafile = rdir + 'INCAR/' + 'mola.json'
+    molafile = rdir + 'mola.json'
     init_json(file=molafile)
     molajson = json.load(open(molafile))
-    molajson['datasets'] = [{'name': 'INCAR', 'id': 1}]
+    molajson['datasets'] = [{'name': d, 'id': i+1} for i,d in enumerate(datasets)]
     with open(molafile, 'w') as f:
         json.dump(molajson, f)
-    rootdir = "D:/external_datasets/MOLA/INCAR/"
+
     # FOR LOOP
-    days = os.listdir(rootdir)
-    imported_cats = False
-    cat_start_id = 0
-    img_start_id = 0
-    ann_start_id = 0
-    cat_l, cat_l_id, cat_l_dset = [], [], []
-    img_l, img_l_id = [], []
-    ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = [], [], [], [], []
-    for day in days:
-        sessiondir = os.path.join(rootdir, day)
-        if not os.path.isdir(sessiondir): continue  # test if is a folder
-        sessions = os.listdir(sessiondir)
-        for session in sessions:
-            scenariosdir = os.path.join(sessiondir, session)
-            if not os.path.isdir(scenariosdir): continue  # test if is a folder
-            scenarios = os.listdir(scenariosdir)
-            for scenario in scenarios:
-                imgdir = os.path.join(scenariosdir, scenario)
-                if not os.path.isdir(imgdir): continue  # test if is a folder
-                labeldir = os.path.join(imgdir, 'gt')
-                # if not os.path.isdir(labeldir): continue #should exist
-                filename = os.path.join(labeldir, "gt.json")
-                gt = json.load(open(filename))
-                # fix gt paths
-                gt = fix_pahts(gt)
-                # update molajson
-                if not imported_cats:  # only imports one time
-                    molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt, start_id=cat_start_id)
-                    imported_cats = True
-                molajson, img_l, img_l_id = import_images(molajson, gt, start_id=img_start_id)
-                molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = create_annotations(molajson, gt, res,
-                                                                                                cat_l, cat_l_id,
-                                                                                                cat_l_dset, img_l_id,
-                                                                                                start_id=ann_start_id)
-                # update start ids to the last id
-                cat_start_id = cat_l_id[-1]
-                img_start_id = img_l_id[-1]
-                ann_start_id = ann_id[-1]
+    datasetsdir = os.listdir(rdir)
+    for dataset in datasetsdir:
+        if dataset in datasets:
+            daysdir = os.path.join(rdir, dataset)
+            if not os.path.isdir(daysdir): continue  # test if is a folder
+            print(">>>\n EXTRACTING DATASET: " + dataset)
+            days = os.listdir(daysdir)
+            imported_cats = False
+            cat_start_id = 0
+            img_start_id = 0
+            ann_start_id = 0
+            cat_l, cat_l_id, cat_l_dset = [], [], []
+            img_l, img_l_id = [], []
+            ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = [], [], [], [], []
+            for day in days:
+                sessiondir = os.path.join(daysdir, day)
+                if not os.path.isdir(sessiondir): continue  # test if is a folder
+                sessions = os.listdir(sessiondir)
+                for session in sessions:
+                    scenariosdir = os.path.join(sessiondir, session)
+                    if not os.path.isdir(scenariosdir): continue  # test if is a folder
+                    scenarios = os.listdir(scenariosdir)
+                    for scenario in scenarios:
+                        imgdir = os.path.join(scenariosdir, scenario)
+                        if not os.path.isdir(imgdir): continue  # test if is a folder
+                        labeldir = os.path.join(imgdir, 'gt')
+                        # if not os.path.isdir(labeldir): continue #should exist
+                        filename = os.path.join(labeldir, "gt.json")
+                        gt = json.load(open(filename))
+                        # fix gt paths
+                        gt = fix_pahts(gt)
+                        # update molajson
+                        if not imported_cats:  # only imports one time
+                            molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt, start_id=cat_start_id)
+                            imported_cats = True
+                        molajson, img_l, img_l_id = import_images(molajson, gt, start_id=img_start_id)
+                        molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = create_annotations(molajson, gt, res,
+                                                                                                        cat_l, cat_l_id,
+                                                                                                        cat_l_dset, img_l_id,
+                                                                                                        start_id=ann_start_id)
+                        # update start ids to the last id
+                        cat_start_id = cat_l_id[-1]
+                        img_start_id = img_l_id[-1]
+                        ann_start_id = ann_id[-1]
 
     # results
     for k in molajson:
