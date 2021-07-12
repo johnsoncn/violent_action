@@ -257,6 +257,9 @@ if __name__ == '__main__':
     datasetsdir = os.listdir(rdir)
     missing_gt_json=[]
     missing_gt_mat=[]
+    label_folder="gt"
+    label_fname="gt.json"
+    label_mat_fname="gt.m"
     for dataset in datasetsdir:
         if dataset in datasets:
             daysdir = os.path.join(rdir, dataset)
@@ -288,16 +291,16 @@ if __name__ == '__main__':
                     for scenario in scenarios:
                         imgdir = os.path.join(scenariosdir, scenario)
                         if not os.path.isdir(imgdir): continue  # test if is a folder
-                        labeldir = os.path.join(imgdir, 'gt')
+                        labeldir = os.path.join(imgdir, label_folder)
                         # if not os.path.isdir(labeldir): continue #should exist
-                        filename = os.path.join(labeldir, "gt2.json")
+                        filename = os.path.join(labeldir, label_fname)
                         try:
                             gt = json.load(open(filename))
                         except:
                             print(">>>>>>>MISSING: ", filename)
                             missing_files.append(filename)
                             missing_gt_json.append(filename)
-                            if not os.path.isfile(filename.replace('gt2.json', 'gt.m')): missing_gt_mat.append(filename.replace('gt2.json', 'gt.m'))
+                            if not os.path.isfile(filename.replace(label_fname, label_mat_fname)): missing_gt_mat.append(filename.replace(label_fname, label_mat_fname))
                             continue
                         # fix gt paths
                         gt = fix_pahts(gt)
@@ -315,25 +318,25 @@ if __name__ == '__main__':
                         img_start_id = img_l_id[-1]
                         ann_start_id = ann_id[-1]
 
-    # results
-    for k in molajson:
-        print(k, len(molajson[k]))
+            # results
+            for k in molajson:
+                print(k, len(molajson[k]))
 
-    # # Save
-    print('\n >> SAVING...')
-    jsonfile=molafile
-    with open(jsonfile, 'w') as f:
-        json.dump(molajson, f)
-    with open(jsonfile.replace('.json', '_missing_gtmat.txt'),'w') as f:
-        f.write(str(missing_gt_mat))
-    with open(jsonfile.replace('.json', '_missing_gtjson.txt'),'w') as f:
-        f.write(str(missing_gt_mat))
-    print("JSON SAVED : {} \n".format(jsonfile))
+            # # Save
+            print('\n >> SAVING...')
+            jsonfile=molafile
+            with open(jsonfile, 'w') as f:
+                json.dump(molajson, f)
+            with open(jsonfile.replace('.json', '_missing_gtmat.txt'),'w') as f:
+                f.write(str(missing_gt_mat))
+            with open(jsonfile.replace('.json', '_missing_gtjson.txt'),'w') as f:
+                f.write(str(missing_gt_mat))
+            print("JSON SAVED : {} \n".format(jsonfile))
 
-    #retest results
-    molajson =  json.load(open(molafile))
-    for k in molajson:
-        print(k, len(molajson[k]))
+            #retest results
+            molajson =  json.load(open(molafile))
+            for k in molajson:
+                print(k, len(molajson[k]))
 
 
 
