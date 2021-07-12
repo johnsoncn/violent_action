@@ -83,13 +83,11 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                 img_fn = Path(imgf).stem
                 img_new_fn = image_id #original filename - if the images are not copied mantain original path
 
-
                 video_id = '%g' % img["video_id"]
                 video = videos[video_id]
                 videof= video["name"]
                 video_fn = Path(videof).stem
                 video_new_fn = video_id
-
 
                 # The Labelbox bounding box format is [top left x, top left y, width, height] | [x,y,w,h]
                 box = np.array(x['bbox'], dtype=np.float64)
@@ -139,21 +137,17 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                         videoline = "{} {} {}".format(category + '/' + video_id + '/' + img_new_fn, total_frames, label)
                         videolist.append(videoline)
                         print(video_id)
-
                 # STOP
                 if img_number and img_counter >= img_number: break
-            #save imglist : mola_{train,val}_rawframes.txt
-            with open(outdir + Path(json_file).stem + '.txt', 'a+') as file:
-                for i in imglist:
-                    file.write(i)
-            #save videolist : mola_{train,val}_rawframes.txt
-            with open(outdir + Path(json_file).stem + '.txt', 'a+') as file:
-                for v in videolist:
-                    file.write(v)
 
-
-
-
+        #save imglist : mola_{train,val}_rawframes.txt
+        with open(outdir + Path(json_file).stem + '.txt', 'w') as file:
+            for i in imglist:
+                file.write(i)
+        #save videolist : mola_{train,val}_rawframes.txt
+        with open(outdir + Path(json_file).stem + '.txt', 'w') as file:
+            for v in videolist:
+                file.write(v)
 
         stop = time.time()
         elapsed=stop-start
