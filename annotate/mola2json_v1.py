@@ -253,13 +253,22 @@ if __name__ == '__main__':
     with open(molafile, 'w') as f:
         json.dump(molajson, f)
 
-    # FOR LOOP
+    # FOR LOOP"
     datasetsdir = os.listdir(rdir)
+    missing_gt_json=[]
+    missing_gt_mat=[]
     for dataset in datasetsdir:
         if dataset in datasets:
             daysdir = os.path.join(rdir, dataset)
             if not os.path.isdir(daysdir): continue  # test if is a folder
-            print(">>>\n EXTRACTING DATASET: " + dataset)
+            print(">>>\n EXTRACTING DATASET: "+dataset)
+            #INIT JSON
+            molafile=rdir+dataset+'/'+'mola.json'
+            init_json(file=molafile)
+            molajson =  json.load(open(molafile))
+            molajson['datasets'] = [{'name': d, 'id': i+1} for i,d in enumerate(datasets)]
+            with open(molafile, 'w') as f:
+                json.dump(molajson, f)
             days = os.listdir(daysdir)
             imported_cats = False
             cat_start_id = 0
@@ -281,8 +290,15 @@ if __name__ == '__main__':
                         if not os.path.isdir(imgdir): continue  # test if is a folder
                         labeldir = os.path.join(imgdir, 'gt')
                         # if not os.path.isdir(labeldir): continue #should exist
-                        filename = os.path.join(labeldir, "gt.json")
-                        gt = json.load(open(filename))
+                        filename = os.path.join(labeldir, "gt2.json")
+                        try:
+                            gt = json.load(open(filename))
+                        except:
+                            print(">>>>>>>MISSING: ", filename)
+                            missing_files.append(filename)
+                            missing_gt_json.append(filename)
+                            if not os.path.isfile(filename.replace('gt2.json', 'gt.m')): missing_gt_mat.append(filename.replace('gt2.json', 'gt.m'))
+                            continue
                         # fix gt paths
                         gt = fix_pahts(gt)
                         # update molajson
@@ -308,6 +324,10 @@ if __name__ == '__main__':
     jsonfile=molafile
     with open(jsonfile, 'w') as f:
         json.dump(molajson, f)
+    with open(jsonfile.replace('.json', '_missing_gtmat.txt'),'w') as f:
+        f.write(str(missing_gt_mat))
+    with open(jsonfile.replace('.json', '_missing_gtjson.txt'),'w') as f:
+        f.write(str(missing_gt_mat))
     print("JSON SAVED : {} \n".format(jsonfile))
 
     #retest results
