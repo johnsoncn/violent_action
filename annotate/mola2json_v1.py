@@ -141,17 +141,24 @@ def init_json(file='mola.json'):
         json.dump(output, f)
     print("JSON INITIATED : {}".format(file))
 
+def parse_path(path):
+    parsed_path = path.replace('\\', '/')
+    parsed_path = parsed_path.replace('\ ', '/')
+    return parsed_path
 
 def fix_pahts(gt):
     #fix gt datasource
     paths=gt['gTruth']['DataSource']
+    if isinstance(paths, dict) and 'Source' in paths: paths=paths['Source']
     originalpath=paths[0]
     for p in paths:
         if p.find("gt") >-1 : 
             originalpath=p
             break
-    paths = [os.path.join(*originalpath.split('\\')[:-1], p.split('\\')[-1]) if p.find("MATLAB") > -1 else p for p in paths]  #remove MATLAB BUG: 'C:\\Tools\\MATLAB\\R2020a\\examples\\symbolic\\data\\196.png'
-    paths = [os.path.join(*p.split('\\')[-7:]) for p in paths] #remove original 
+    originalpath=parse_path(originalpath)
+    paths=[parse_path(p) for p in paths]
+    paths = ['/'.join(originalpath.split('/')[:-1]+[p.split('/')[-1]]) if p.find("MATLAB") > -1 else p for p in paths]  #remove MATLAB BUG: 'C:\\Tools\\MATLAB\\R2020a\\examples\\symbolic\\data\\196.png'
+    paths = ['/'.join(p.split('/')[-7:]) for p in paths] #remove root dir 
     gt['gTruth']['DataSource']=paths
     return gt
 
@@ -187,7 +194,7 @@ def import_images(molajson, gt, start_id=0):
         img_l_id.append(start_id+i+1) # id start from 1
         molajson['images'].append({'file_name':img_l[i],
                                    'id':img_l_id[i],
-                                   'caption':img_l[i].split('\\')[-4], # scenario
+                                   'caption':img_l[i].split('/')[-4], # scenario
                                    'dataset':1})
     print("\n>> images:\n", molajson['images'][-2:])
     return molajson, img_l, img_l_id
@@ -244,14 +251,6 @@ if __name__ == '__main__':
         'thermal': [640,512],
         'pointcloud': [640,576]
     }
-
-    # INIT JSON
-    molafile = rdir + 'mola.json'
-    init_json(file=molafile)
-    molajson = json.load(open(molafile))
-    molajson['datasets'] = [{'name': d, 'id': i+1} for i,d in enumerate(datasets)]
-    with open(molafile, 'w') as f:
-        json.dump(molajson, f)
 
     # FOR LOOP"
     datasetsdir = os.listdir(rdir)
