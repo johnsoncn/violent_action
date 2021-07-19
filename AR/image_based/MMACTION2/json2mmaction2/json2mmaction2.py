@@ -1,7 +1,7 @@
 import json
-from shutil import copyfile
 import os
 import argparse
+import time
 
 import glob
 import shutil
@@ -14,145 +14,135 @@ def make_folders(path='../out/'):
     if os.path.exists(path):
         shutil.rmtree(path)  # delete output folder
     os.makedirs(path)  # make new output folder
-    os.makedirs(path + os.sep + 'labels_with_ids')  # make new labels folder #FairMOT.src.lib.datastets.dataset.jde self.label_files = [x.replace('images', 'labels_with_ids').replace('.png', '.txt').replace('.jpg', '.txt')for x in self.img_files]
-    os.makedirs(path + os.sep + 'images')  # make new labels folder
-    return path
+    return
 
+def extract_file(src,dst,copy=True):
+    extracted=True
+    try:
+        if copy:
+            if not os.path.exists(os.path.dirname(dst)): os.makedirs(os.path.dirname(dst)) #make sure dir exists
+            shutil.copyfile(src, dst)  # raises if missing files
+        else: #if not copy only extracting filelist from json
+            if not os.path.exists(src): raise
+    except:
+        print("\n>> missing : {}".format(src))
+        extracted=False
+    return extracted
 
+def write_from_annotation(json_file, data, images, videos, categories, copy_images, copy_videos, outdir_img, outdir_video, img_number=None, level=2):
+    # WRITE FILES (COPY & GENERATE FILELIST)
+    # image lists
+    img_l = []
+    saved_img_l= []
+    imglist = []
+    img_counter = 0 # image counter
+    # video lists
+    video_l = []
+    saved_video_l= []
+    videolist = []
+    # write files
+    method="for" #TODO: parfor method
+    start=time.time()
+    if method=="for":
+        #WRITE IMAGES
+        for x in tqdm(data['annotations'], desc='Annotations %s' % json_file):
+            # extract image info from x['image_id']
+            image_id='%g' % x['image_id']
+            if image_id in img_l: continue # continue to next loop if repeated image_id
+            img_l.append(image_id)
+            img = images[image_id]
+            h, w, imgf = img['height'], img['width'], img['file_name']
+            _, img_ext = os.path.splitext(imgf)
+            img_fn = Path(imgf).stem
+            img_new_fn = "img_"+image_id #img_imgid.jpg (imgid with zeros 00001: image_id.zfill(5) ) Problem is I don't no the maximum of images
+            # extract video info from img['video_id']
+            video_id = '%g' % img["video_id"]
+            video = videos[video_id]
+            videof= video["name"]
+            video_fn = Path(videof).stem
+            video_new_fn = "video_"+video_id
+            # extract label and category
+            catid = '%g' % x['category_id']
+            label = catid
+            category = categories[catid]
+            # extract total label frames
+            total_frames = '%g' % x['label_frames']
+            # extract category
+            category = categories[label]['name']
+            # extract bounding box format is [top left x, top left y, width, height] | [x,y,w,h]
+            box = np.array(x['bbox'], dtype=np.float64)
+            box[:2] += box[2:] / 2  # xy top-left corner to center
+            box[[0, 2]] /= w  # normalize x & w
+            box[[1, 3]] /= h  # normalize y & h
+            if (box[2] > 0.) and (box[3] > 0.):  # if w > 0 and h > 0
+                # write images - 1st because if copy_images fails the rest should not be done
+                src = os.path.join(datasets_root_dir, imgf)
+                dst = os.path.join(outdir_img, video_new_fn, img_new_fn + img_ext)
+                if level==2: dst = os.path.join(outdir_img, category, video_new_fn, img_new_fn + img_ext)
+                ext=extract_file(src,dst,copy=copy_images)
+                if not ext: continue #if image missing from dataset when extracting images dont write nothing more
+                # rawframe annotation file list: json to txt [ frame_directory total_frames label  ]
+                imgline = f'{video_new_fn} {total_frames} {label}\n' # f'{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
+                if level==2: imgline = f'{category}/{video_new_fn} {total_frames} {label}\n' # f'{category}/{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
+                imglist.append(imgline)
+                img_counter += 1
+            # STOP conditions
+            if img_number and img_counter >= img_number:
+                print("STOP CONDITION")
+                break
+        #remove duplicate paths
+        imglist=list(dict.fromkeys(imglist))
+    stop = time.time()
+    elapsed=stop-start
+    print("time elapsed:", elapsed)
+    return imglist, videolist, saved_img_l, saved_video_l
 
-def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, copy_videos=False, only_labels=False, img_number=None, track_id=None):
+def mola2mmaction2(datasets_root_dir=None, json_file='mola.json', outdir='out/', copy_images=True, copy_videos=False, img_number=None, level=2):
+    # MAKE ROOT DIRS
+    videodir_path = 'videos_%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
+    imgdir_path = 'rawframes_%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
+    outdir_video = os.path.join (outdir, videodir_path)
+    outdir_img = os.path.join (outdir, imgdir_path)
+    if copy_videos: make_folders(path=outdir_video)
+    if copy_images: make_folders(path=outdir_img)
+    # PARSE JSON ANNOTATIONS
+    data=None
+    with open(json_file) as f:
+        data = json.load(f)
+    if not data: raise
+    # create image dict {id: image}
+    images = {'%g' % x['id']: x for x in data['images']}
+    # create video dict {id: video}
+    videos = {'%g' % x['id']: x for x in data['videos']}
+    # create category dict {id: category}
+    categories = {'%g' % x['id']: x for x in data['categories']}
+    # WRITE FILES (COPY & GENERATE FILELIST)
+    method="from_annotation"
+    if method=="from_annotation":
+        imglist, videolist, saved_img_l, saved_video_l=write_from_annotation(json_file, data, images, videos, categories, copy_images, copy_videos, outdir_img, outdir_video, img_number=img_number, level=level)
+
+    return imglist, videolist, saved_img_l, saved_video_l
+
+def convert_mola_json(dataset="mola", datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, copy_videos=False, img_number=None, level=2):
     # Convert motionLab JSON file into  labels --------------------------------
-    '''
-    #WARNING copy_images="1" #1=copy_images images from original datasets, easiest way to create  dataset
-    # "0"= don't copy_images images use the ones from original #WARNING labels need to be organized
-    » copy_images labels to the same root dir as "images" in original dataset and also have the same path as the images
-
-    # Define label paths as a function of image paths
-    sa, sb = os.sep + 'images' + os.sep, os.sep + 'labels' + os.sep  # /images/, /labels/ substrings
-
-    #track_id: None: using counter; str: the key of track id (e.g.: TAO is "track_id" - WARNING: MCMOT giving BUGs)
-    '''
     outdir = make_folders(path=outdir)  # output directory
     jsons = glob.glob(json_dir + '*.json')
-    # tao_cat_idx = [x for x in range(833)]  # object catagories index - 833 cat = 488 LVIS + 345 free-form
-
     # Import json
     for json_file in sorted(jsons):
-        # make dirs
-        videodir_path = 'videos_%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
-        imgdir_path = 'rawframes_%s/' % Path(json_file).stem  # folder name (train, val, test) remove other info
-        dir_video = outdir + videodir_path
-        os.mkdir(dir_video)
-        dir_img = outdir + imgdir_path
-        os.mkdir(dir_img)
-
-        #json file
-        with open(json_file) as f:
-            data = json.load(f)
-
-        # image lists
-        img_l = []
-        save_img_l= []
-        imglist = []
-        
-        # video lists
-        video_l = []
-        videolist = []
-
-        # image counter
-        img_counter = 0
-
-        # Create image dict {id: image}
-        images = {'%g' % x['id']: x for x in data['images']}
-
-        # Create video dict {id: video}
-        videos = {'%g' % x['id']: x for x in data['videos']}
-
-        # WRITE
-        method="for"
-        import time
-        start=time.time()
-
-        #track id
-        tid=0
-        if method=="for":
-            for x in tqdm(data['annotations'], desc='Annotations %s' % json_file):
-                image_id='%g' % x['image_id']
-                img = images[image_id]
-                h, w, imgf = img['height'], img['width'], img['file_name']
-                _, img_ext = os.path.splitext(imgf)
-                img_fn = Path(imgf).stem
-                img_new_fn = image_id #original filename - if the images are not copied mantain original path
-
-                video_id = '%g' % img["video_id"]
-                video = videos[video_id]
-                videof= video["name"]
-                video_fn = Path(videof).stem
-                video_new_fn = video_id
-
-                # The Labelbox bounding box format is [top left x, top left y, width, height] | [x,y,w,h]
-                box = np.array(x['bbox'], dtype=np.float64)
-                box[:2] += box[2:] / 2  # xy top-left corner to center
-                box[[0, 2]] /= w  # normalize x & w
-                box[[1, 3]] /= h  # normalize y & h
-
-                if (box[2] > 0.) and (box[3] > 0.):  # if w > 0 and h > 0
-                    # write images - 1st because if copy_images fails the
-                    if not image_id in img_l: # don't repeat write images #if not (any([True for im in img_l if im.find(str(x['image_id'])) > -1])):
-                        img_l.append(image_id)  # all images
-                        # copy_images
-                        if copy_images or only_labels:
-                            src = os.path.join(datasets_root_dir, imgf)
-                            dst = os.path.join(dir_img, img_new_fn + img_ext)
-                            try:
-                                if copy_images: copyfile(src, dst)  # missing files
-                                if only_labels and not os.path.exists(src): raise
-                                save_img_l.append(image_id)  # only images that are saved
-                            except:
-                                img_l[-1] = img_l[-1] + '_MISSING'
-                                print("\n>> missing : {}".format(Path(os.path.join(datasets_root_dir, imgf))))
-                                print(img_l[-1])
-                                continue #if image missing from dataset when copy_images dont write nothing more
-                        # rawframe annotation file list: json to txt [ frame_directory total_frames label  ]
-                        imgline = "{} {} {}".format(category + '/' + video_id + '/' + img_new_fn, total_frames, label)
-                        imglist.append(imgline)
-                        img_counter += 1
-                        print(image_id)
-                    # write videos
-                    if not video_id in video_l:  # don't repeat write images #if not (any([True for im in img_l if im.find(str(x['image_id'])) > -1])):
-                        video_l.append(video_id)  # all images
-                        # copy_videos
-                        if copy_videos or only_labels:
-                            src = os.path.join(datasets_root_dir, imgf)
-                            dst = os.path.join(dir_img, img_new_fn + img_ext)
-                            try:
-                                if copy_videos: copyfile(src, dst)  # missing files
-                                if only_labels and not os.path.exists(src): raise
-                                save_img_l.append(image_id)  # only images that are saved
-                            except:
-                                img_l[-1] = img_l[-1] + '_MISSING'
-                                print("\n>> missing : {}".format(Path(os.path.join(datasets_root_dir, videof))))
-                                print(img_l[-1])
-                                continue  # if image missing from dataset when copy_images dont write nothing more
-                        #video annotation file list: json to txt [fielpath label]
-                        videoline = "{} {} {}".format(category + '/' + video_id + '/' + img_new_fn, total_frames, label)
-                        videolist.append(videoline)
-                        print(video_id)
-                # STOP
-                if img_number and img_counter >= img_number: break
-
+        imglist, videolist, saved_img_l, saved_video_l = mola2mmaction2(datasets_root_dir=datasets_root_dir,
+                                                                        json_file=json_file,
+                                                                        outdir=outdir,
+                                                                        copy_images=copy_images,
+                                                                        copy_videos=copy_videos,
+                                                                        img_number=img_number,
+                                                                        level=level)
+        # GENERATE FILELISTS
         #save imglist : mola_{train,val}_rawframes.txt
-        with open(outdir + Path(json_file).stem + '.txt', 'w') as file:
-            for i in imglist:
-                file.write(i)
-        #save videolist : mola_{train,val}_rawframes.txt
-        with open(outdir + Path(json_file).stem + '.txt', 'w') as file:
-            for v in videolist:
-                file.write(v)
+        dataset_type='rawframes'
+        filename=f'{dataset}_{Path(json_file).stem}_{dataset_type}.txt'
+        with open(outdir + filename, 'w') as f:
+            f.writelines(imglist)
 
-        stop = time.time()
-        elapsed=stop-start
-        print(elapsed)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -167,12 +157,11 @@ if __name__ == '__main__':
                         default="D:/external_datasets/MOLA/fairmotformat/mola_train/",
                         help='fairmotformat dataset output path')
     parser.add_argument('--img_number', type=int, default=None, help='number of images to convert. None=convert all')
-    parser.add_argument('--copy_images', type=int, default=0, help='copy_images images to folder /images and add new path to .txt . If 0 no image is copied and .txt has the original paths')
-    parser.add_argument('--only_labels', type=int, default=0,
-                        help='write labels only as if you were copy_imagesing images to folder /images and add new path to .txt .')
-    parser.add_argument('--track_id', type=str,
-                        default=None,
-                        help='track id json key in annotations')
+    parser.add_argument('--copy_images', type=int, default=0, help='copy_images images to folder /rawframes_{json_file} and add new path to .txt .')
+    parser.add_argument('--copy_videos', type=int, default=0,
+                        help='copy_videos to folder /videos_{json_file} and add new path to .txt ')
+    parser.add_argument('--level', type=int, default=1,
+                        help='write directory level: 1, video_id/; 2, category/video_id')
 
     opt = parser.parse_args()
 
@@ -183,15 +172,15 @@ if __name__ == '__main__':
     img_number = opt.img_number
     copy_images = False
     if opt.copy_images == 1: copy_images = True
-    only_labels = False
-    if opt.only_labels == 1: only_labels = True
+    if opt.only_videos == 1: copy_videos = True #TODO
+    level=opt.level
     print('\n>>' + str(opt))
-    track_id = opt.track_id
 
     if not datasets_root_dir: raise RuntimeError('Select datasets_root_dir')
 
     if source == 'mola':
         # CREATE LABELS and IMAGES FOLDER
         convert_mola_json(datasets_root_dir=datasets_root_dir, json_dir=json_dir,
-                          outdir=outdir, img_number=img_number, copy_images=copy_images, only_labels=only_labels, track_id=track_id)
+                          outdir=outdir, copy_images=copy_images,
+                          copy_videos=copy_videos, img_number=img_number, level=level)
 

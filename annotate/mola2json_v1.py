@@ -127,6 +127,7 @@ def init_json(file='mola.json'):
         "tracks": [],
         "segment_info": [],
         "annotations": [],
+        "video_annotations": [],
         "datasets": [] #[{'name': 'COCO', 'id': 1}, {'name': 'TAO', 'id': 2}]
     }
     output['info'] = {
@@ -184,7 +185,30 @@ def import_categories(molajson, gt, start_id=0):
     print("\n>> categories:\n", molajson['categories'][-2:])
     return molajson, cat_l, cat_l_id, cat_l_dset
 
-def import_images(molajson, gt, start_id=0):
+def import_videos(molajson, gt, res, start_id=0, sensor="rgb", ext=".mp4"):
+    #single-level:
+    vid=start_id+1
+    video_l=[]
+    video_l_id=[]
+    total_frames=len(gt['gTruth']['DataSource'])
+    videon='_'.join(gt['gTruth']['DataSource'][0].split('/')[:-3])+'_'+sensor+ext #f'video_{vid}_{sensor}{ext}'
+    videon=videon.replace(' ','_') # remove trailing spaces in "Session 1"
+    video='/'.join(gt['gTruth']['DataSource'][0].split('/')[:-3])+'/'+'gt'+'/'+videon
+    video_l.append(video)
+    video_l_id.append(vid)
+    i=0 #no loop
+    molajson['videos'].append({'name':video_l[i],
+                               'id':video_l_id[i],
+                               'width': res[sensor][0],
+                               'height': res[sensor][1],
+                               'sensor': sensor,
+                               'fps': res['fps'],
+                               'total_frames': total_frames,
+                               'dataset':1})
+    print("\n>> video:\n", molajson['videos'])
+    return molajson, video_l, video_l_id
+
+def import_images(molajson, gt, res, start_id=0, video_id=1, sensor="rgb"):
     # images filepath and id
     img_l=[]
     img_l_id=[]
@@ -192,14 +216,21 @@ def import_images(molajson, gt, start_id=0):
     for i,im in enumerate(tqdm(img)):
         img_l.append(im)
         img_l_id.append(start_id+i+1) # id start from 1
+        frame_index=img_l[i].split('/')[-1]
+        frame_index=int(frame_index.split('.')[0])
         molajson['images'].append({'file_name':img_l[i],
                                    'id':img_l_id[i],
+                                   'video_id':video_id,
                                    'caption':img_l[i].split('/')[-4], # scenario
+                                   'width': res[sensor][0],
+                                   'height': res[sensor][1],
+                                   "frame_index": frame_index,
+                                   "date_captured": img_l[i].split('/')[-6],
                                    'dataset':1})
     print("\n>> images:\n", molajson['images'][-2:])
     return molajson, img_l, img_l_id
 
-def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id, start_id=0):
+def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id, start_id=0, sensor="rgb"):
     # annotations category_id, image_id, bbox, and dataset
     ann_id=[]
     ann_catid=[]
@@ -207,16 +238,22 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id,
     ann_bbox=[]
     ann_dset=[]
     labels=gt['gTruth']['LabelData']
+    frames_violent=[i+1 for i,l in enumerate(labels) if l["VIOLENT"]]
+    frames_nonviolent=[i+1 for i,l in enumerate(labels) if not l["VIOLENT"]]
     for i,l in enumerate(tqdm(labels)):
         annid=start_id+i+1
+        #specific - TODO unspecific
         catidx=cat_l.index("VIOLENT")
-        if not l["VIOLENT"]: catidx=cat_l.index("NONVIOLENT")
+        label_frames=frames_violent
+        if not l["VIOLENT"]:
+            catidx=cat_l.index("NONVIOLENT")
+            label_frames=frames_nonviolent
         catid=cat_l_id[catidx]
         dataset=cat_l_dset[catidx]
         imgidx=i
         imgid=img_l_id[imgidx]
-        bbox=[0, 0, res['rgb'][0], res['rgb'][1]] # [x,y,width,height], #default RGB
-        area=res['rgb'][0]*res['rgb'][1] #default RGB
+        bbox=[0, 0, res[sensor][0], res[sensor][1]] # [x,y,width,height], #default RGB
+        area=res[sensor][0]*res[sensor][1] #default RGB
         ann_id.append(annid)
         ann_catid.append(catid)
         ann_imgid.append(imgid)
@@ -227,10 +264,44 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id,
                                         'image_id':imgid,
                                         'bbox': bbox,
                                         'area': area,
+                                        "label_frames": len(label_frames),
                                         'iscrowd': 0,
                                         'dataset':dataset})
     print("\n>> annotations:\n", molajson['annotations'][-2:])
     return molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset
+
+def create_video_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, video_l_id, start_id=0, sensor="rgb"):
+    # annotations category_id, image_id, bbox, and dataset
+    ann_id=[]
+    ann_catid=[]
+    ann_videoid=[]
+    ann_dset=[]
+    labels=gt['gTruth']['LabelData']
+    frames_violent=[i+1 for i,l in enumerate(labels) if l["VIOLENT"]]
+    frames_nonviolent=[i+1 for i,l in enumerate(labels) if not l["VIOLENT"]]
+    for i,c in enumerate(tqdm(cat_l)):
+        annid=start_id+i+1
+        catidx=i
+        #specific - TODO unspecific
+        label_frames=frames_violent
+        if c=="NONVIOLENT": label_frames=frames_nonviolent
+        catid=cat_l_id[catidx]
+        dataset=cat_l_dset[catidx]
+        videoidx=0 #only one video per scenario
+        videoid=video_l_id[videoidx]
+        ann_id.append(annid)
+        ann_catid.append(catid)
+        ann_videoid.append(videoid)
+        ann_dset.append(dataset)
+        molajson['video_annotations'].append({'id':annid,
+                                        'category_id':catid,
+                                        'video_id':videoid,
+                                        'time_start': int(label_frames[0]), #in frames, then it can be converted using the fps
+                                        'time_end': int(label_frames[-1]), #in frames
+                                        "label_frames": len(label_frames),
+                                        'dataset':dataset})
+    print("\n>> video_annotations:\n", molajson['video_annotations'][-2:])
+    return molajson, ann_id, ann_catid, ann_videoid, ann_dset
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -246,39 +317,46 @@ if __name__ == '__main__':
     print('root dir: {}'.format(rdir))
 
     # define resolutions
-    res={
-        'rgb': [2048, 1536], #w,h
-        'thermal': [640,512],
-        'pointcloud': [640,576]
+    res = {
+        'rgb': [2048, 1536],  # w,h
+        'thermal': [640, 512],
+        'pointcloud': [640, 576],
+        'fps': 30
     }
 
     # FOR LOOP"
     datasetsdir = os.listdir(rdir)
-    missing_gt_json=[]
-    missing_gt_mat=[]
-    label_folder="gt"
-    label_fname="gt.json"
-    label_mat_fname="gt.m"
+    missing_gt_json = []
+    missing_gt_mat = []
+    label_folder = "gt"
+    label_fname = "gt.json"
+    label_mat_fname = "gt.m"
+    sensor = "rgb"
+    ext = ".mp4"
     for dataset in datasetsdir:
         if dataset in datasets:
             daysdir = os.path.join(rdir, dataset)
             if not os.path.isdir(daysdir): continue  # test if is a folder
-            print(">>>\n EXTRACTING DATASET: "+dataset)
-            #INIT JSON
-            molafile=rdir+dataset+'/'+'mola.json'
+            days = os.listdir(daysdir)
+            print(">>>\n EXTRACTING DATASET: " + dataset)
+            # INIT JSON
+            molafile = rdir + dataset + '/' + 'mola.json'
             init_json(file=molafile)
-            molajson =  json.load(open(molafile))
-            molajson['datasets'] = [{'name': d, 'id': i+1} for i,d in enumerate(datasets)]
+            molajson = json.load(open(molafile))
+            molajson['datasets'] = [{'name': d, 'id': i + 1} for i, d in enumerate(datasets)]
             with open(molafile, 'w') as f:
                 json.dump(molajson, f)
-            days = os.listdir(daysdir)
-            imported_cats = False
+            # INIT VARS
+            imported_cats = False  # import cats from each dataset
             cat_start_id = 0
+            video_start_id = 0
             img_start_id = 0
             ann_start_id = 0
             cat_l, cat_l_id, cat_l_dset = [], [], []
+            video_l, video_l_id = [], []
             img_l, img_l_id = [], []
             ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = [], [], [], [], []
+            # FOR LOOP
             for day in days:
                 sessiondir = os.path.join(daysdir, day)
                 if not os.path.isdir(sessiondir): continue  # test if is a folder
@@ -299,21 +377,38 @@ if __name__ == '__main__':
                             print(">>>>>>>MISSING: ", filename)
                             missing_files.append(filename)
                             missing_gt_json.append(filename)
-                            if not os.path.isfile(filename.replace(label_fname, label_mat_fname)): missing_gt_mat.append(filename.replace(label_fname, label_mat_fname))
+                            if not os.path.isfile(
+                                filename.replace(label_fname, label_mat_fname)): missing_gt_mat.append(
+                                filename.replace(label_fname, label_mat_fname))
                             continue
                         # fix gt paths
                         gt = fix_pahts(gt)
                         # update molajson
                         if not imported_cats:  # only imports one time
-                            molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt, start_id=cat_start_id)
+                            molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt,
+                                                                                      start_id=cat_start_id)
                             imported_cats = True
-                        molajson, img_l, img_l_id = import_images(molajson, gt, start_id=img_start_id)
-                        molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = create_annotations(molajson, gt, res,
+                        molajson, video_l, video_l_id = import_videos(molajson, gt, res,
+                                                                      start_id=video_start_id,
+                                                                      sensor=sensor,
+                                                                      ext=ext)
+                        molajson, img_l, img_l_id = import_images(molajson, gt, res,
+                                                                  start_id=img_start_id,
+                                                                  video_id=video_l_id[-1])
+                        molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = create_annotations(molajson, gt,
+                                                                                                        res,
                                                                                                         cat_l, cat_l_id,
-                                                                                                        cat_l_dset, img_l_id,
-                                                                                                        start_id=ann_start_id)
+                                                                                                        cat_l_dset,
+                                                                                                        img_l_id,
+                                                                                                        start_id=ann_start_id,
+                                                                                                        sensor=sensor)
+                        molajson, ann_id, ann_catid, ann_videoid, ann_dset = create_video_annotations(molajson, gt, res,
+                                                                                                      cat_l, cat_l_id,
+                                                                                                      cat_l_dset,
+                                                                                                      video_l_id)
                         # update start ids to the last id
                         cat_start_id = cat_l_id[-1]
+                        video_start_id = video_l_id[-1]
                         img_start_id = img_l_id[-1]
                         ann_start_id = ann_id[-1]
 
@@ -323,17 +418,17 @@ if __name__ == '__main__':
 
             # # Save
             print('\n >> SAVING...')
-            jsonfile=molafile
+            jsonfile = molafile
             with open(jsonfile, 'w') as f:
                 json.dump(molajson, f)
-            with open(jsonfile.replace('.json', '_missing_gtmat.txt'),'w') as f:
+            with open(jsonfile.replace('.json', '_missing_gtmat.txt'), 'w') as f:
                 f.write(str(missing_gt_mat))
-            with open(jsonfile.replace('.json', '_missing_gtjson.txt'),'w') as f:
+            with open(jsonfile.replace('.json', '_missing_gtjson.txt'), 'w') as f:
                 f.write(str(missing_gt_mat))
             print("JSON SAVED : {} \n".format(jsonfile))
 
-            #retest results
-            molajson =  json.load(open(molafile))
+            # retest results
+            molajson = json.load(open(molafile))
             for k in molajson:
                 print(k, len(molajson[k]))
 
