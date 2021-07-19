@@ -21,89 +21,110 @@
 
  #ANNOTATIONS FORMAT (BASED ON COCO)
 
- #Annotations format keys:
+  #Annotations format keys:
 
- { "info": None, 
-   "licenses": [], TODO
-   "categories": [], 
-   "images": [],
-   "annotations": [],
-   "videos": [], TODO
-   "tracks": [], TODO
-   "segment_info": [], TODO
-   "datasets": [{'name': 'INCAR', 'id': 1}, {'name': 'INVICON', 'id': 2}] 
- }
+{ "info": None,
+"licenses": [], #TODO
+"categories": [],
+"images": [],
+"annotations": [],
+"videos": [],
+"video_annotations": [],
+"tracks": [], #TODO - only for Object Tracking
+"segment_info": [], #TODO
+"datasets": [{'name': 'INCAR', 'id': 1}, {'name': 'INVICON', 'id': 2}]
+}
 
- #1 object definition:
+#1 object definition:
 
- info{
-     "year": int, 
-     "version": str, 
-     "description": str, 
-     "contributor": str, 
-     "url": str, 
-     "date_created": datetime,
- }
- 
- license{
-     "id": int, 
-     "name": str, 
-     "url": str,
- }
- 
- category{
-     "id": int, 
-     "name": str, 
-     "supercategory": str,
- }
- 
- image: {
-     "id" : int,
-     "video_id": int, #TODO
-     "file_name" : str,
-     "license" : int,
-     # Redundant fields for COCO-compatibility
-     "width": int,
-     "height": int,
-     "frame_index": int,
-     "date_captured": datetime,
- 
- annotation: {
-     "category_id": int
-     "image_id": int,
-     "track_id": int,
-     "bbox": [x,y,width,height],
-     "area": float,
-     # Redundant field for compatibility with COCO scripts
-     "id": int,
-     "iscrowd": 0 or 1,  (iscrowd=1) are used to label large groups of objects (e.g. a crowd of people)
-     "segmentation": RLE(iscrowd=1) or [polygon](iscrowd=0), 
-     
- }
- 
- video: { #TODO
-     "id": int,
-     "name": str,
-     "width" : int,
-     "height" : int,
-     "metadata": dict,  # Metadata about the video
- }
- 
- segment{ #TODO
-     "id": int, 
-     "category_id": int, 
-     "area": int, 
-     "bbox": [x,y,width,height], 
-     # Redundant field for compatibility with COCO scripts
-     "iscrowd": 0 or 1,
- }
- 
-    
- track: { #TODO
-     "id": int,
-     "category_id": int,
-     "video_id": int
- }
+info: {
+ "year": int,
+ "version": str,
+ "description": str,
+ "contributor": str,
+ "url": str,
+ "date_created": datetime,
+}
+
+license: {
+ "id": int,
+ "name": str,
+ "url": str,
+}
+
+category: {
+ "id": int,
+ "name": str,
+ "supercategory": str,
+ "dataset": int, #dataset_id
+}
+
+image: {
+ "id" : int,
+ "video_id": int,
+ "file_name" : str,
+ "license" : int,
+ "dataset": int, #dataset_id
+ # Redundant fields for COCO-compatibility
+ "width": int,
+ "height": int,
+ "frame_index": int, #frame index from original video_id
+ "date_captured": datetime,
+}
+
+annotation: { #rawframes annotation
+ "category_id": int
+ "image_id": int,
+ #"track_id": int, # NOT FOR ACTION, ONLY FOR OBJECT TRACKING
+ "bbox": [x,y,width,height],
+ "area": float,
+ "label_frames": int, # TOTAL NUMBER OF FRAMES OF LABEL category_id
+ "dataset": int, #dataset_id
+ # Redundant field for compatibility with COCO scripts
+ "id": int,
+ "iscrowd": 0 or 1,  (iscrowd=1) are used to label large groups of objects (e.g. a crowd of people)
+ "segmentation": RLE(iscrowd=1) or [polygon](iscrowd=0),
+
+}
+
+video: {
+ "id": int,
+ "name": str,
+ "width" : int,
+ "height" : int,
+ "total_frames": int, # TOTAL NUMBER OF FRAMES OF THE VIDEO
+ "fps": int,
+ "dataset": int, #dataset_id
+ #"metadata": dict,  # Metadata about the video - NOT NECESSARY ADDITIONAL DICT
+}
+
+video_annotation: {
+ "id": int,
+ "category_id": int, #label
+ "video_id": int,
+ "time_start": int, #in frames, then it can be converted using the fps
+ "time_end":int, #in frames
+ "label_frames": int, # TOTAL NUMBER OF FRAMES OF LABEL category_id
+ "dataset": int, #dataset_id
+}
+
+
+
+segment: { #TODO
+ "id": int,
+ "category_id": int,
+ "area": int,
+ "bbox": [x,y,width,height],
+ # Redundant field for compatibility with COCO scripts
+ "iscrowd": 0 or 1,
+}
+
+
+track: { #DOES IT MAKE SENSE TO TRACT ACTIONS INSIDE THE VIDEO? NO- ONLY OBJECTS
+ "id": int,
+ "category_id": int,
+ "video_id": int
+}
 
 """
 # ## SETUP
@@ -164,6 +185,7 @@ def fix_pahts(gt):
     return gt
 
 def import_categories(molajson, gt, start_id=0):
+    dataset=molajson["datasets"][0]['id']
     # IMPORT categories name and id
     cat_l=[]
     cat_l_id=[]
@@ -172,20 +194,20 @@ def import_categories(molajson, gt, start_id=0):
     for i,c in enumerate(tqdm(cat)):
         cat_l.append(c['Name'])
         cat_l_id.append(start_id+i+1) # id start from 1
-        cat_l_dset.append(1) # dataset index
+        cat_l_dset.append(dataset) # dataset index
         molajson['categories'].append({'name':cat_l[i],'id':cat_l_id[i],'dataset':cat_l_dset[i]})
     # ADDITIONAL CATEGORIES: MANUAL
     name='NONVIOLENT'
     cid=len(cat_l)+1
-    dset=1
-    molajson['categories'].append({'name':name,'id':cid,'dataset':dset})
+    molajson['categories'].append({'name':name,'id':cid,'dataset':dataset})
     cat_l.append(name)
     cat_l_id.append(cid)
-    cat_l_dset.append(dset)
+    cat_l_dset.append(dataset)
     print("\n>> categories:\n", molajson['categories'][-2:])
     return molajson, cat_l, cat_l_id, cat_l_dset
 
 def import_videos(molajson, gt, res, start_id=0, sensor="rgb", ext=".mp4"):
+    dataset=molajson["datasets"][0]['id']
     #single-level:
     vid=start_id+1
     video_l=[]
@@ -204,11 +226,12 @@ def import_videos(molajson, gt, res, start_id=0, sensor="rgb", ext=".mp4"):
                                'sensor': sensor,
                                'fps': res['fps'],
                                'total_frames': total_frames,
-                               'dataset':1})
+                               'dataset':dataset})
     print("\n>> video:\n", molajson['videos'])
     return molajson, video_l, video_l_id
 
 def import_images(molajson, gt, res, start_id=0, video_id=1, sensor="rgb"):
+    dataset=molajson["datasets"][0]['id']
     # images filepath and id
     img_l=[]
     img_l_id=[]
@@ -226,11 +249,12 @@ def import_images(molajson, gt, res, start_id=0, video_id=1, sensor="rgb"):
                                    'height': res[sensor][1],
                                    "frame_index": frame_index,
                                    "date_captured": img_l[i].split('/')[-6],
-                                   'dataset':1})
+                                   'dataset':dataset})
     print("\n>> images:\n", molajson['images'][-2:])
     return molajson, img_l, img_l_id
 
 def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id, start_id=0, sensor="rgb"):
+    dataset=molajson["datasets"][0]['id']
     # annotations category_id, image_id, bbox, and dataset
     ann_id=[]
     ann_catid=[]
@@ -249,7 +273,7 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id,
             catidx=cat_l.index("NONVIOLENT")
             label_frames=frames_nonviolent
         catid=cat_l_id[catidx]
-        dataset=cat_l_dset[catidx]
+        #dataset=cat_l_dset[catidx]
         imgidx=i
         imgid=img_l_id[imgidx]
         bbox=[0, 0, res[sensor][0], res[sensor][1]] # [x,y,width,height], #default RGB
@@ -271,6 +295,7 @@ def create_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, img_l_id,
     return molajson, ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset
 
 def create_video_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, video_l_id, start_id=0, sensor="rgb"):
+    dataset=molajson["datasets"][0]['id']
     # annotations category_id, image_id, bbox, and dataset
     ann_id=[]
     ann_catid=[]
@@ -285,8 +310,9 @@ def create_video_annotations(molajson, gt, res, cat_l, cat_l_id, cat_l_dset, vid
         #specific - TODO unspecific
         label_frames=frames_violent
         if c=="NONVIOLENT": label_frames=frames_nonviolent
+        if not label_frames: continue #no frames of this category, therefore video of this category
         catid=cat_l_id[catidx]
-        dataset=cat_l_dset[catidx]
+        #dataset=cat_l_dset[catidx]
         videoidx=0 #only one video per scenario
         videoid=video_l_id[videoidx]
         ann_id.append(annid)
@@ -329,10 +355,11 @@ if __name__ == '__main__':
     missing_gt_json = []
     missing_gt_mat = []
     label_folder = "gt"
-    label_fname = "gt.json"
+    label_fname = "gt2.json"
     label_mat_fname = "gt.m"
     sensor = "rgb"
     ext = ".mp4"
+    did = 1  # start dataset id
     for dataset in datasetsdir:
         if dataset in datasets:
             daysdir = os.path.join(rdir, dataset)
@@ -343,7 +370,9 @@ if __name__ == '__main__':
             molafile = rdir + dataset + '/' + 'mola.json'
             init_json(file=molafile)
             molajson = json.load(open(molafile))
-            molajson['datasets'] = [{'name': d, 'id': i + 1} for i, d in enumerate(datasets)]
+            molajson['datasets'] = [
+                {'name': dataset, 'id': did}]  # [{'name': d, 'id': i+1} for i,d in enumerate(datasets)]
+            did += 1  # nem dataset added
             with open(molafile, 'w') as f:
                 json.dump(molajson, f)
             # INIT VARS
@@ -352,10 +381,12 @@ if __name__ == '__main__':
             video_start_id = 0
             img_start_id = 0
             ann_start_id = 0
+            vid_ann_start_id = 0
             cat_l, cat_l_id, cat_l_dset = [], [], []
             video_l, video_l_id = [], []
             img_l, img_l_id = [], []
             ann_id, ann_catid, ann_imgid, ann_bbox, ann_dset = [], [], [], [], []
+            vid_ann_id, vid_ann_catid, ann_videoid, vid_ann_dset = [], [], [], []
             # FOR LOOP
             for day in days:
                 sessiondir = os.path.join(daysdir, day)
@@ -373,16 +404,15 @@ if __name__ == '__main__':
                         filename = os.path.join(labeldir, label_fname)
                         try:
                             gt = json.load(open(filename))
+                            # fix gt paths
+                            gt = fix_pahts(gt)  # gTruth can be also missing missing
                         except:
-                            print(">>>>>>>MISSING: ", filename)
-                            missing_files.append(filename)
+                            print(">>>>>>>MISSING OR BUG gtFILE: ", filename)
                             missing_gt_json.append(filename)
                             if not os.path.isfile(
                                 filename.replace(label_fname, label_mat_fname)): missing_gt_mat.append(
                                 filename.replace(label_fname, label_mat_fname))
                             continue
-                        # fix gt paths
-                        gt = fix_pahts(gt)
                         # update molajson
                         if not imported_cats:  # only imports one time
                             molajson, cat_l, cat_l_id, cat_l_dset = import_categories(molajson, gt,
@@ -402,15 +432,18 @@ if __name__ == '__main__':
                                                                                                         img_l_id,
                                                                                                         start_id=ann_start_id,
                                                                                                         sensor=sensor)
-                        molajson, ann_id, ann_catid, ann_videoid, ann_dset = create_video_annotations(molajson, gt, res,
-                                                                                                      cat_l, cat_l_id,
-                                                                                                      cat_l_dset,
-                                                                                                      video_l_id)
+                        molajson, vid_ann_id, vid_ann_catid, ann_videoid, vid_ann_dset = create_video_annotations(
+                            molajson, gt, res,
+                            cat_l, cat_l_id,
+                            cat_l_dset, video_l_id,
+                            start_id=vid_ann_start_id,
+                            sensor=sensor)
                         # update start ids to the last id
                         cat_start_id = cat_l_id[-1]
                         video_start_id = video_l_id[-1]
                         img_start_id = img_l_id[-1]
                         ann_start_id = ann_id[-1]
+                        vid_ann_start_id = vid_ann_id[-1]
 
             # results
             for k in molajson:
@@ -424,7 +457,7 @@ if __name__ == '__main__':
             with open(jsonfile.replace('.json', '_missing_gtmat.txt'), 'w') as f:
                 f.write(str(missing_gt_mat))
             with open(jsonfile.replace('.json', '_missing_gtjson.txt'), 'w') as f:
-                f.write(str(missing_gt_mat))
+                f.write(str(missing_gt_json))
             print("JSON SAVED : {} \n".format(jsonfile))
 
             # retest results
