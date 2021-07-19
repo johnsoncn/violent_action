@@ -6,7 +6,7 @@ TRAIN CUSTOM DATA @NC UPDATE:
 
 2. Generate filelist
 
-3. Configure mmaction2 to receive custom dataset
+3. Configure mmaction2 to receive custom dataset (see customconfig.py)
 
 
 
@@ -16,7 +16,7 @@ DETAILED:
 Dataset preparation: https://mmaction2.readthedocs.io/en/latest/data_preparation.html
 https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
 
-Exemplo 1 data structure:
+Exemplo 1 data structure two-level directory:
 
 mmaction2
 ├── mmaction
@@ -26,7 +26,7 @@ mmaction2
 │   ├── mola
 │   │   ├── videos
 │   │   │    ├── VIOLENT 
-│   │   │    │    ├──video_id.mp4 (filepath=VIOLENT/video_id.mp4) two-level (single-level filepath=video_id.mp4)
+│   │   │    │    ├──video_id.mp4 (two-level, filepath=VIOLENT/video_id.mp4)  
 │   │   │    ├── NONVIOLENT
 │   │   ├── rawframes
 │   │   │    ├── VIOLENT
@@ -36,10 +36,12 @@ mmaction2
 │   │   │    │    │   ├──flow_x_imgid.jpg
 │   │   │    │    │   ├──flow_y_imgid.jpg
 │   │   │    ├── NONVIOLENT
-│   │   ├── mola_train_list_rawframes.txt
-│   │   ├── mola_val_list_rawframes.txt
-│   │   ├── mola_train_list_videos.txt
-│   │   ├── mola_val_list_videos.txt
+│   │   ├── mola_train_rawframes.txt
+│   │   ├── mola_val__rawframes.txt
+│   │   ├── mola_train_videos.txt
+│   │   ├── mola_val_videos.txt
+
+(single-level directory, filepath=video_id.mp4)
 
 Exemplo 2:
 
@@ -63,10 +65,10 @@ mmaction2
 │   │   │    │    │   ├──flow_y_imgid.jpg
 │   │   │    ├── NONVIOLENT
 │   │   ├── rawframes_val
-│   │   ├── mola_train_list_rawframes.txt
-│   │   ├── mola_val_list_rawframes.txt
-│   │   ├── mola_train_list_videos.txt
-│   │   ├── mola_val_list_videos.txt
+│   │   ├── mola_train_rawframes.txt
+│   │   ├── mola_val_rawframes.txt
+│   │   ├── mola_train_videos.txt
+│   │   ├── mola_val_videos.txt
 
 
 filelist example:

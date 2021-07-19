@@ -12,9 +12,9 @@ dataset="mola"
 dataset_type = 'RawframeDataset'
 data_root = root+dataset+'/rawframes'
 data_root_val = root+dataset+'/rawframes'
-ann_file_train = root+dataset+'/'+dataset+'_train_list_rawframes.txt'
-ann_file_val = root+dataset+'/'+dataset+'_val_list_rawframes.txt'
-ann_file_test = root+dataset+'/'+dataset+'_val_list_rawframes.txt'
+ann_file_train = root+dataset+'/'+dataset+'_train_rawframes.txt'
+ann_file_val = root+dataset+'/'+dataset+'_val_rawframes.txt'
+ann_file_test = root+dataset+'/'+dataset+'_val_rawframes.txt'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 train_pipeline = [

@@ -1,5 +1,5 @@
 import json
-from shutil import copy_imagesfile
+from shutil import copyfile
 import os
 import argparse
 
@@ -19,8 +19,9 @@ def make_folders(path='../out/'):
     return path
 
 
-# Convert motionLab JSON file into  labels --------------------------------
+
 def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, copy_videos=False, only_labels=False, img_number=None, track_id=None):
+    # Convert motionLab JSON file into  labels --------------------------------
     '''
     #WARNING copy_images="1" #1=copy_images images from original datasets, easiest way to create  dataset
     # "0"= don't copy_images images use the ones from original #WARNING labels need to be organized
@@ -104,7 +105,7 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                             src = os.path.join(datasets_root_dir, imgf)
                             dst = os.path.join(dir_img, img_new_fn + img_ext)
                             try:
-                                if copy_images: copy_imagesfile(src, dst)  # missing files
+                                if copy_images: copyfile(src, dst)  # missing files
                                 if only_labels and not os.path.exists(src): raise
                                 save_img_l.append(image_id)  # only images that are saved
                             except:
@@ -125,7 +126,7 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                             src = os.path.join(datasets_root_dir, imgf)
                             dst = os.path.join(dir_img, img_new_fn + img_ext)
                             try:
-                                if copy_images: copy_imagesfile(src, dst)  # missing files
+                                if copy_videos: copyfile(src, dst)  # missing files
                                 if only_labels and not os.path.exists(src): raise
                                 save_img_l.append(image_id)  # only images that are saved
                             except:
