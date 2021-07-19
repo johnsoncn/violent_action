@@ -81,17 +81,22 @@ def write_from_annotation(json_file, data, images, videos, categories, copy_imag
                 if level==2: dst = os.path.join(outdir_img, category, video_new_fn, img_new_fn + img_ext)
                 ext=extract_file(src,dst,copy=copy_images)
                 if not ext: continue #if image missing from dataset when extracting images dont write nothing more
-                # rawframe annotation file list: json to txt [ frame_directory total_frames label  ]
-                imgline = f'{video_new_fn} {total_frames} {label}\n' # f'{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
-                if level==2: imgline = f'{category}/{video_new_fn} {total_frames} {label}\n' # f'{category}/{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
+                # img list:
+                imgline = f'{video_new_fn}/{img_new_fn}\n' # f'{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
+                if level==2: imgline = f'{category}/{video_new_fn}/{img_new_fn}\n' # f'{category}/{video_new_fn}/{img_new_fn} {total_frames} {label}\n'
                 imglist.append(imgline)
                 img_counter += 1
+                # rawframe annotation file list: json to txt [ frame_directory total_frames label  ]
+                vidline = f'{video_new_fn} {total_frames} {label}\n'
+                if level==2: vidline = f'{category}/{video_new_fn} {total_frames} {label}\n'
+                videolist.append(vidline)
             # STOP conditions
             if img_number and img_counter >= img_number:
                 print("STOP CONDITION")
                 break
         #remove duplicate paths
         imglist=list(dict.fromkeys(imglist))
+        videolist=list(dict.fromkeys(videolist))
     stop = time.time()
     elapsed=stop-start
     print("time elapsed:", elapsed)
@@ -125,7 +130,7 @@ def mola2mmaction2(datasets_root_dir=None, json_file='mola.json', outdir='out/',
 
 def convert_mola_json(dataset="mola", datasets_root_dir=None, json_dir='../mola/annotations/', outdir='out/', copy_images=True, copy_videos=False, img_number=None, level=2):
     # Convert motionLab JSON file into  labels --------------------------------
-    outdir = make_folders(path=outdir)  # output directory
+    make_folders(path=outdir)  # output directory
     jsons = glob.glob(json_dir + '*.json')
     # Import json
     for json_file in sorted(jsons):
@@ -137,11 +142,11 @@ def convert_mola_json(dataset="mola", datasets_root_dir=None, json_dir='../mola/
                                                                         img_number=img_number,
                                                                         level=level)
         # GENERATE FILELISTS
-        #save imglist : mola_{train,val}_rawframes.txt
+        #save videolist rawframes annotations : mola_{train,val}_rawframes.txt
         dataset_type='rawframes'
         filename=f'{dataset}_{Path(json_file).stem}_{dataset_type}.txt'
         with open(outdir + filename, 'w') as f:
-            f.writelines(imglist)
+            f.writelines(videolist)
 
 
 if __name__ == '__main__':
