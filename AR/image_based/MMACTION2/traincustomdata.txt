@@ -4,7 +4,7 @@ TRAIN CUSTOM DATA @NC UPDATE:
 
 1. Prepare dataset (See examples below)
 
-2. Generate filelist
+2. Generate filelist (depends on the import class method in mmaction2/mmaction/datasets)
 
 3. Configure mmaction2 to receive custom dataset (see customconfig.py)
 
@@ -16,7 +16,7 @@ DETAILED:
 Dataset preparation: https://mmaction2.readthedocs.io/en/latest/data_preparation.html
 https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
 
-Exemplo 1 data structure two-level directory:
+Exemplo 1 data structure two-level directory for mmaction RawframeDataset and VideoDataset class import (NOTE: there is also other classes to import like the ImageDataset, or you can make your own):
 
 mmaction2
 ├── mmaction
