@@ -2,6 +2,7 @@
 *.pyc
 *.pt
 *.pth
+*.eeg-info
 .DS_Store
 /yolo/yolo.egg-info
 fairmot/FairMOT
