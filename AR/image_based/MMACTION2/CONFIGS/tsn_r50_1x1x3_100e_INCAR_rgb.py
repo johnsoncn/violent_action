@@ -1,5 +1,6 @@
 # mmaction2 dir
-mmadir="/home/administrator/Z/Algorithms/mmaction2/"
+mmadir="C:/Users/nmc_costa/Desktop/Desk/mmaction2/"  #"/home/administrator/Z/Algorithms/mmaction2/"
+
 
 # base(default) settings
 baseroot=mmadir+'configs/' #default: "../../"
@@ -149,7 +150,7 @@ log_config = dict(  # Config to register logger hook
 # runtime settings
 dist_params = dict(backend='nccl')  # Parameters to setup distributed training, the port can also be set
 log_level = 'INFO'  # The level of logging
-work_dir_root= '/home/administrator/Z/Work/EASYRIDE/P19/NC/mmaction2/TESTS/train/' #defualt: './'
+work_dir_root= './' #defualt: './'
 work_dir = work_dir_root+'work_dirs/tsn_r50_1x1x3_100e_INCAR_rgb/' # Directory to save the model 
 load_from = None  # model path can be found in model zoo  # load models as a pre-trained model from a given path. This will not resume training
 resume_from = None  # Resume checkpoints from a given path, the training will be resumed from the epoch when the checkpoint's is saved
