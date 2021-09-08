@@ -10,5 +10,8 @@ Uminho MotionLab P19 violent action machine learning algorithms
 - Violent action
 - Human-Object Interaction (HOI)
 
+## Curated state of the art on Action recogntion
+
+Please go to the awesome https://github.com/jinwchoi/awesome-action-recognition
 
 ### Keywords: action, human, Human-Object Interaction, recognition, object, detection, tracking,dataset, challenge, benchmark
