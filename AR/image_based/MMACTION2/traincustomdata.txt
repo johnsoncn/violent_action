@@ -4,7 +4,7 @@ TRAIN CUSTOM DATA @NC UPDATE:
 
 1. Prepare dataset (See examples below)
 
-2. Generate filelist (depends on the import class method in mmaction2/mmaction/datasets)
+2. Generate annotation file filelist (depends on the import class method in mmaction2/mmaction/datasets): offline conversion
 
 3. Configure mmaction2 to receive custom dataset (see customconfig.py)
 
@@ -51,20 +51,14 @@ mmaction2
 ├── configs
 ├── data
 │   ├── mola
-│   │   ├── videos_train
-│   │   │    ├── VIOLENT
+│   │   ├── videos
 │   │   │    │    ├──video_id.mp4
-│   │   │    ├── NONVIOLENT
-│   │   ├── videos_val
-│   │   ├── rawframes_train
-│   │   │    ├── VIOLENT
+│   │   ├── rawframes
 │   │   │    │    ├──video_id
 │   │   │    │    │   ├──img_imgid.jpg (imgid with 4 zero padding)
 │   │   │    │    │   ├──...
 │   │   │    │    │   ├──flow_x_imgid.jpg
 │   │   │    │    │   ├──flow_y_imgid.jpg
-│   │   │    ├── NONVIOLENT
-│   │   ├── rawframes_val
 │   │   ├── mola_train_rawframes.txt
 │   │   ├── mola_val_rawframes.txt
 │   │   ├── mola_train_videos.txt
@@ -123,6 +117,15 @@ Data preparation
 			method="tsn" (model)
 			my_custom_config=see customconfig.py (go see examples in configs)
 		see https://github.com/open-mmlab/mmaction2/blob/master/docs/tutorials/3_new_dataset.md
+	3 Two ways to work with custom datasets:
+		- online conversion
+
+			You can write a new Dataset class inherited from BaseDataset, and overwrite three methods load_annotations(self), evaluate(self, results, metrics, logger) and dump_results(self, results, out), like RawframeDataset, VideoDataset or ActivityNetDataset.
+
+		- offline conversion
+
+			You can convert the annotation format to the expected format above and save it to a pickle or json file, then you can simply use RawframeDataset, VideoDataset or ActivityNetDataset.
+
 Example of config dirs:
 root="data/" #default: "data/"
 dataset="mola"
