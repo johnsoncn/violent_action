@@ -7,16 +7,16 @@ import argparse
 from tqdm import tqdm
 
 scritpdir=os.path.dirname(os.path.realpath(__file__))
-cls2id = json.load(open(os.path.join(scritpdir,'cls2id.txt')))
-id2cls = json.load(open(os.path.join(scritpdir,'id2cls.txt')))
-correctedDict = {}
-for key, value in id2cls.items():
-	try:
-		key = int(key)
-	except Exception as ex:
-		pass
-	correctedDict[key] = value
-id2cls = correctedDict #id2cls needs to be int keys
+#cls2id = json.load(open(os.path.join(scritpdir,'cls2id.txt')))
+#id2cls = json.load(open(os.path.join(scritpdir,'id2cls.txt')))
+#correctedDict = {}
+#for key, value in id2cls.items():
+#	try:
+#		key = int(key)
+#	except Exception as ex:
+#		pass
+#	correctedDict[key] = value
+#id2cls = correctedDict #id2cls needs to be int keys
 
 
 
