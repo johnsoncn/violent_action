@@ -1,0 +1,1 @@
+{"VIOLENT": 1, "NONVIOLENT": 2}
