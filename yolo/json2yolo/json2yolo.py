@@ -42,9 +42,9 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
         os.mkdir(dir_label)
         dir_img = outdir + imgdir_path
         os.mkdir(dir_img)
+        
         with open(json_file) as f:
             data = json.load(f)
-
         # image array
         img_a = []
         save_img_a= []
@@ -55,6 +55,7 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
 
         # Create image dict {id: image}
         images = {'%g' % x['id']: x for x in data['images']}
+        
 
         # WRITE
         method="for"
@@ -267,7 +268,7 @@ if __name__ == '__main__':
                         default="D:/external_datasets/MOLA/yoloformat/mola_train/",
                         help='yoloformat dataset output path')
     parser.add_argument('--img_number', type=int, default=None, help='number of images to convert. None=convert all')
-    parser.add_argument('--copy_images', type=int, default=0, help='copy images to folder /images and add new path to .txt . If 0 no image is copied and .txt has the original paths')
+    parser.add_argument('--copy_images', type=int, default=0, help='copy images to folder /images and add new path to .txt . If 0 no image is copied and .txt has the original paths; if ')
     parser.add_argument('--only_labels', type=int, default=0,
                         help='write labels only as if you were copying images to folder /images and add new path to .txt .')
 
