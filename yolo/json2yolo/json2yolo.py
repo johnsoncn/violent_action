@@ -63,7 +63,7 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
         import time
         start=time.time()
         if method=="for":
-            for x in tqdm(data['annotations'], desc='Annotations %s' % json_file):
+            for x in tqdm(data['annotations'], desc='Annotations %s' % Path(json_file).stem):
                 try:
                     if x['iscrowd']: continue
                 except:
@@ -109,7 +109,7 @@ def convert_mola_json(datasets_root_dir=None, json_dir='../mola/annotations/', o
                         img_counter += 1
                         lb_d[str(x['image_id'])]=[]
                         save_img_a.append(str(x['image_id']))  # only images that are saved
-                        print(str(x['image_id']))
+                        #print(str(x['image_id']))
                     # write labels
                     if  (str(x['image_id']) in save_img_a) and (not str(box) in lb_d[str(x['image_id'])]):  # don't write same labels (even if annotations are duplicated)
                         lb_d[str(x['image_id'])].append(str(box))
