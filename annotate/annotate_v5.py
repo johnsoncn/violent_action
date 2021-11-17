@@ -29,6 +29,7 @@ def init_json(file='mola.json'):
         "tracks": [],
         "segment_info": [],
         "annotations": [],
+        "video_annotations": [],
         "datasets": [] #[{'name': 'COCO', 'id': 1}, {'name': 'TAO', 'id': 2}]
     }
     output['info'] = {
@@ -171,7 +172,7 @@ def save_imgs(dataframe, rdir, path, i, dset_l, classes_l, classes_l_catid, clas
 
         dataset = dset_l[
             classes_l_dset[i][ii][startidx] - 1]  # #WARNING: it works because molajson[datasets] is ordered
-        print(dataset)
+        #print(dataset)
         # SAVE IMAGE
         dpi = 80
         imgidx_l = [startidx]  # default
@@ -371,7 +372,7 @@ if __name__ == '__main__':
     molajson = json.load(open(molajsonfile))
     newjson = json.load(open(newjsonfile))
 
-    # GEG JSON STRUCK
+    # GEG JSON STRUCt
     keys_struct_d = {}
     for nj_k in newjson:
         keys_struct_d[nj_k] = []
