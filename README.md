@@ -20,4 +20,5 @@ Please go to the awesome https://github.com/jinwchoi/awesome-action-recognition
 
 ## Results
 
+![Alt Text](https://github.com/nmc-costa/violent_action/blob/master/p19_results_1.gif)
 
