@@ -22,3 +22,7 @@ Please go to the awesome https://github.com/jinwchoi/awesome-action-recognition
 
 ![Alt Text](https://github.com/nmc-costa/violent_action/blob/master/p19_results_1.gif)
 
+Embedded system Kinetic Azure + Jetson Xavier with aggressive item detection, lost item detection and violent action detection:
+
+![Alt Text](https://github.com/nmc-costa/violent_action/blob/master/p19_results_2_s.gif)
+
